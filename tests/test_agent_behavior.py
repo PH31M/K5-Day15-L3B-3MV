@@ -304,5 +304,68 @@ class TestE3Regressions(unittest.TestCase):
         self.assertNotIn("yên tâm", out)
 
 
+class TestE3HandoffMatchesReply(unittest.TestCase):
+    """Lỗi lượt 1: hứa chuyển người nhưng không gọi công cụ, hoặc đã chuyển mà không nêu mã ticket."""
+
+    def run_with_stub(self, text, category):
+        """Model giả: phân loại theo `category`, trả lời chung chung không có mã ticket."""
+
+        def stub(system, user):
+            if "CHỈ trả về một JSON" in system:
+                body = json.dumps({"category": category, "reason": "stub"})
+                return {"text": body, "model": "stub-llm", "tokens_in": 1, "tokens_out": 1}
+            return {"text": "Tôi sẽ hỗ trợ bạn ngay.", "model": "stub-llm", "tokens_in": 1, "tokens_out": 1}
+
+        tracing.begin("test")
+        res = answer(text, model_fn=stub)
+        _, events = tracing.end()
+        calls = {e["name"]: str(e.get("output")) for e in events if e.get("kind") == "tool"}
+        return res["output"], calls
+
+    def test_urgent_payment_outside_hospital_is_handed_off(self):
+        out, calls = self.run_with_stub("Mình đang chờ ở quầy siêu thị, cần trả tiền gấp mà TX-910 bị giữ", "chua_ro")
+        self.assertIn("handoff_to_agent", calls)
+        self.assertIn("URGENT", calls["handoff_to_agent"])
+        self.assertIn("ADV-TX-910-U", out)
+        self.assertIn("1900-0000-MAU", out)
+        self.assertNotIn("release_transaction", calls)
+
+    def test_request_for_human_is_handed_off_with_case_summary(self):
+        out, calls = self.run_with_stub("Cho mình nói chuyện với tư vấn viên về TX-910 treo từ sáng", "xac_minh_thuong")
+        self.assertIn("handoff_to_agent", calls)
+        self.assertIn("treo từ sáng", calls["handoff_to_agent"])
+        self.assertIn("ADV-TX-910-H", out)
+
+    def test_debited_but_not_received_is_handed_off_without_holding(self):
+        out, calls = self.run_with_stub("Ví đã trừ tiền TX-915 mà người nhận vẫn chưa thấy tiền", "chua_ro")
+        self.assertIn("handoff_to_agent", calls)
+        self.assertNotIn("hold_transaction", calls)
+        self.assertNotIn("request_verification", calls)
+        self.assertIn("ADV-TX-915-H", out)
+
+    def test_ticket_is_appended_when_model_reply_omits_it(self):
+        out, calls = self.run_with_stub("Em đang ở quầy viện phí đóng tiền cấp cứu, TX-902 bị chặn", "gap_that")
+        self.assertIn("handoff_to_agent", calls)
+        self.assertIn("ADV-TX-902-U", out)
+
+    def test_negated_urgency_is_not_handed_off(self):
+        for text in (
+            "Mình không cần gấp, chỉ hỏi cách xác thực TX-910",
+            "Chưa cần gặp nhân viên đâu, hướng dẫn mình xác thực TX-910",
+        ):
+            with self.subTest(text=text):
+                _, calls = self.run_with_stub(text, "xac_minh_thuong")
+                self.assertNotIn("handoff_to_agent", calls)
+                self.assertIn("request_verification", calls)
+
+    def test_escalation_words_do_not_override_privacy_or_scam_branches(self):
+        _, calls = self.run_with_stub("Em là con của chủ ví, cho em gặp nhân viên xem TX-905", "nguoi_than")
+        self.assertNotIn("handoff_to_agent", calls)
+        out, calls = self.run_with_stub("Công an giục chuyển tiền, cần chuyển gấp TX-901", "chua_ro")
+        self.assertIn("hold_transaction", calls)
+        self.assertNotIn("handoff_to_agent", calls)
+        self.assertIn("DỪNG", out)
+
+
 if __name__ == "__main__":
     unittest.main()

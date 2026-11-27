@@ -1,52 +1,51 @@
-# Mô phỏng chi phí khi dùng thật — điền ở guide bước 4.2.
-# Ôn lại: ngày 13, ngày 1, ngày 14 · lab ngày 13, lab ngày 14.
-# Mọi số phải có nguồn (data / phỏng vấn / khảo sát / quy mô khoá có nguồn) hoặc ghi rõ "(tự ước tính)".
-# Chạy: python run.py simulate --try   (10 phiên, kiểm khung — làm trước CP3)
+# Mô phỏng chi phí khi dùng thật — Nhóm 3MV · Track E (E3). Guide bước 4.2.
+# Mọi số có nguồn hoặc ghi rõ "(tự ước tính)".
+# Chạy: python run.py simulate --try   (10 phiên, kiểm khung — CP3)
 #       python run.py simulate         (đủ số phiên dưới đây — bản nộp CP4)
-# Thay mọi dòng "(ví dụ)" bằng số và nguồn của nhóm; simulate nhắc nếu còn sót.
 
 sessions: 50        # số phiên mô phỏng — bản nộp ≥50
 seed: 42            # giữ cố định để chạy lại ra cùng chuỗi phiên
 
-users:              # số người dùng thật nếu đưa vào dùng — 3 kịch bản, ở quy mô thật của sản phẩm
-                    # track A: khoá học · track B–F: người dùng của sản phẩm / nhóm nhắm tới, nguồn công khai có link
-  low: 300
-  base: 700
-  high: 1000
-  source: "(ví dụ) track A — thay bằng số của nhóm. Cơ sở: lớp L3 hơn 700 học viên (README hackathon); thấp, cao: (tự ước tính)"
+users:              # số người dùng ví hoạt động / tháng — 3 kịch bản
+  low: 10000
+  base: 50000
+  high: 200000
+  source: "(tự ước tính) thấp = 10.000, cùng quy mô giả định ở spec.md §2; cơ sở = 50.000 và cao = 200.000 là giả định mở rộng, chưa có nguồn công khai"
 
-personas:           # ≥3 kiểu người dùng; share cộng lại = 1
+personas:           # share lấy từ khảo sát câu 6 (tần suất 3 tháng qua); share cộng lại = 1
   - name: dung_it
-    share: 0.5              # tỉ lệ người dùng kiểu này
-    uses_per_month: 4       # số phiên / người / tháng
-    turns_per_session: 1    # số lượt hỏi trong một phiên
-    source: "(ví dụ) phỏng vấn P1, P3 — thay bằng nguồn của nhóm"
+    share: 0.75
+    uses_per_month: 0.2
+    turns_per_session: 1
+    source: "share: khảo sát n=40 câu 6, 30/40 chọn 0 lần (19) hoặc 1 lần trong 3 tháng (11), xem evidence/survey/results.csv. uses_per_month = 0,2 theo spec.md §2 (tự ước tính, cao hơn mức quy đổi từ khảo sát khoảng 0,12). turns_per_session (tự ước tính)"
   - name: dung_vua
-    share: 0.3
-    uses_per_month: 10
-    turns_per_session: 3
-    source: "(ví dụ) khảo sát n = 24, câu 3"
+    share: 0.15
+    uses_per_month: 1.5
+    turns_per_session: 2
+    source: "share: khảo sát n=40 câu 6, 6/40 chọn 1-2 lần/tháng. uses_per_month = điểm giữa khoảng 1-2 (tự ước tính). turns_per_session (tự ước tính)"
   - name: dung_nhieu
-    share: 0.2
-    uses_per_month: 20
-    turns_per_session: 5
-    source: "(ví dụ) data/preclass: đếm số lượt / người — cách đếm ở evidence/data-mining.md"
+    share: 0.10
+    uses_per_month: 3.5
+    turns_per_session: 3
+    source: "share: khảo sát n=40 câu 6, 4/40 chọn từ 3 lần/tháng trở lên. uses_per_month = 3,5 cho nhóm từ 3 lần trở lên (tự ước tính). turns_per_session (tự ước tính)"
+# Câu 6 đếm số lần gặp giao dịch bất thường / tin nhắn nghi lừa đảo, không đếm số phiên chat.
+# Dùng nó làm uses_per_month là giả định mỗi lần gặp thành một phiên chat, nên chi phí tính ra nghiêng về cận trên.
 # Mỗi lượt hỏi lấy ngẫu nhiên một đầu vào trong eval/benchmark.csv (type thuong và kho).
-# Persona hỏi kiểu riêng: thêm vào persona đó
-#     types: [thuong, kho, tu_choi]
-# hoặc
-#     inputs: ["câu hỏi kiểu 1", "câu hỏi kiểu 2"]
 
-prices:             # USD / 1 triệu token — chép từ further-reading/model-prices.md của repo đề. ≥2 mức model
+prices:             # USD / 1 triệu token, gói trả phí chuẩn
+  - model: openai/gpt-4.1-mini
+    input: 0.40
+    output: 1.60
+    source: "https://openrouter.ai/api/v1/models · xem 28/11/2026 (model đã chạy eval lượt 1)"
   - model: gemini-3.1-flash-lite
     input: 0.25
     output: 1.50
-    source: "(ví dụ) https://ai.google.dev/gemini-api/docs/pricing · xem 25/11/2026"
+    source: "https://ai.google.dev/gemini-api/docs/pricing và https://openrouter.ai/api/v1/models · xem 28/11/2026 (tầng nhỏ)"
   - model: gemini-4-hydrogen
     input: 1.50
     output: 7.50
-    source: "(ví dụ) https://ai.google.dev/gemini-api/docs/pricing · xem 25/11/2026"
+    source: "https://ai.google.dev/gemini-api/docs/pricing và https://openrouter.ai/api/v1/models · xem 28/11/2026 (tầng lớn)"
 
-usd_to_vnd:         # tuỳ chọn: điền thì bản tóm tắt in thêm tiền Việt
-  rate:
-  source:
+usd_to_vnd:
+  rate: 25687
+  source: "Tỷ giá trung tâm NHNN ngày 27/11/2026 theo báo https://thitruongtaichinhtiente.vn/ngay-27-11-ty-gia-trung-tam-tang-11-dong-87350.html · xem 28/11/2026"
