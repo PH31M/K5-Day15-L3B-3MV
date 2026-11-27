@@ -1,7 +1,7 @@
 # Tổng hợp bằng chứng pain — Nhóm 3MV · Track E (E3)
 
-> Cập nhật cho **CP2 (27/11/2026)** và hoàn thiện tiếp phỏng vấn P1–P3 trước **CP3 (10:00 Thứ Bảy 28/11)**. Chấm ở rubric R1.
-> Cả **2 nguồn độc lập** đều đã **đạt ngưỡng R1** ngay tại mốc CP2, có script tái lập ngoại tuyến 100% không cần mạng.
+> Hoàn thiện **đủ cả 3/3 nguồn độc lập đều đạt ngưỡng R1** trước CP3 (**10:00 Thứ Bảy 28/11**). Chấm ở rubric R1.
+> Cả Nguồn 1 và Nguồn 2 đều có script tái lập ngoại tuyến 100%; Nguồn 3 có đủ log nguyên văn `P1.md..P3.md` + 2 người cam kết dùng thử bản demo ngày 28/11 (chuẩn bị cho `validation/log.md`).
 
 ## 1. Nguồn đã dùng
 
@@ -9,7 +9,7 @@
 |---|:---:|---|---|
 | **Nguồn 1 · Đào data công khai** (App Store VN: MoMo + MB Bank, 21–25/11/2026) | ☑ Đạt | `N = 100` review (1–5★), `33` review 1–3★ · `python3 evidence/mine_reviews.py --recount` | [`evidence/data-mining.md`](data-mining.md) · [`reviews_sample_anonymized.csv`](reviews_sample_anonymized.csv) |
 | **Nguồn 2 · Khảo sát lớp** (AI20K L3A/L3B, mở 18:15 · chốt đợt 1 lúc 18:55 ngày 27/11/2026) | ☑ Đạt | `n = 40` phiếu hợp lệ (từ `41` dòng thô, loại `1` dòng trống lúc cập nhật form; đã xoá hoàn toàn cột câu 8 & giờ chi tiết, kiểm `0` SĐT/email) · `python3 evidence/survey/analyze_survey.py` | [`evidence/survey/questions.md`](survey/questions.md) · [`evidence/survey/results.csv`](survey/results.csv) |
-| **Nguồn 3 · Phỏng vấn sâu Mom Test** (bổ sung cho CP3) | ☐ Đang hẹn | Dự kiến ≥3 người ngoài nhóm tối 27/11 (`P1.md`..`P3.md`) | `evidence/interviews/` |
+| **Nguồn 3 · Phỏng vấn sâu Mom Test** (3 người dùng ngoài nhóm, 27/11/2026) | ☑ Đạt | `3/3` người ngoài nhóm (`P1`, `P2`, `P3`), hỏi theo [`GUIDE.md`](interviews/GUIDE.md) · **2/3 người cam kết test demo ngày 28/11** | [`P1.md`](interviews/P1.md) · [`P2.md`](interviews/P2.md) · [`P3.md`](interviews/P3.md) |
 
 ## 2. Số chính
 
@@ -28,40 +28,48 @@
 - **Nghịch lý sinh trắc học (Q5 — chứng minh luật giữ giao dịch kể cả khi `face_verified=true`):** **23/40 (57,5%)** nhận định Face ID thành công *chưa chắc an toàn* vì vẫn có thể bị thao túng ép chuyển, trong khi **8/40 (20,0%)** tin *chắc chắn an toàn* và **9/40 (22,5%)** *chưa từng nghĩ tới* → tổng **17/40 (42,5%)** có rủi ro chủ quan nếu không được cảnh báo chặn đúng lúc.
 - **Tần suất 3 tháng qua (Q6 — cơ sở persona cho `cost/personas.yaml`):** `0 lần`: **19/40 (47,5%)** · `1 lần / 3 tháng`: **11/40 (27,5%)** · `1–2 lần / tháng`: **6/40 (15,0%)** · `≥3 lần / tháng`: **4/40 (10,0%)**.
 
-### Nguồn 3 · Phỏng vấn sâu Mom Test *(cập nhật đầy đủ trước CP3 10:00 Thứ Bảy)*
+### Nguồn 3 · Phỏng vấn sâu Mom Test (`3/3` người gặp sự cố giao dịch bị trừ/treo · *n nhỏ không ghi %*)
+
+- Số người gặp sự cố giao dịch treo/trừ tiền: **3/3 người** (`P1`, `P2`, `P3`) · gặp chatbot chung chung/vòng vo: **2/3 người** (`P1`, `P3`; `P2` gọi thẳng tổng đài) · bỏ qua cảnh báo chữ nhỏ trên app: **2/3 người** (`P1`, `P2`).
+- Thời gian kiểm tra ban đầu: **20–45 phút** (`P1`: 45 phút, `P3`: 20–30 phút); thời gian hoàn tiền thực tế: **từ sáng hôm sau (`P1`) đến 3 ngày (`P2`)**.
+- Cam kết dùng thử bản demo ngày 28/11: **2/3 người** (`P1`, `P3`).
 
 | | Vai | Gặp pain? | Số lần / 1 tháng qua | Lần gần nhất mất | Đang xoay xở bằng |
 |---|---|---|---|---|---|
-| P1 | *(đang hẹn tối 27/11)* | | | | |
-| P2 | *(đang hẹn tối 27/11)* | | | | |
-| P3 | *(đang hẹn tối 27/11)* | | | | |
+| P1 | Học viên AI20K (ngoài nhóm, dùng app ngân hàng & ví) | Có (treo giao dịch sau 21h + gọi giả shipper) | 2 lần | **45 phút** kiểm tra/chờ chat (sáng hôm sau mới hoàn) | Bỏ ngang chatbot vì rớt hàng chờ sau 20h, chuyển bù từ ví khác rồi gọi hotline hôm sau |
+| P2 | Sinh viên dùng app ngân hàng BIDV (ngoài nhóm) | Một phần (bị trừ tiền không tới, bỏ sót cảnh báo chữ nhỏ) | 1 lần | **3 ngày** mới hoàn tiền *(giờ gọi tổng đài: không nhớ)* | Gọi thẳng tổng đài điện thoại (chưa từng dùng chatbot) |
+| P3 | Người dùng app ngân hàng thường xuyên (ngoài nhóm) | Có (bị trừ tiền không rõ trạng thái + bot chung chung) | 0–1 lần *(gần nhất 1–2 tháng trước)* | **20–30 phút** kiểm tra & tìm cách tra soát | Chụp màn hình, nhắn chatbot rồi chuyển tổng đài (phải kể lại tình huống nhiều lần) |
 
-## 3. ≥5 trích dẫn / ví dụ nguyên văn (đã ẩn danh, đa nguồn)
+## 3. ≥5 trích dẫn / ví dụ nguyên văn (đã ẩn danh, đủ cả 3 nguồn)
 
 1. *"App lỗi không chuyển được tiền. báo lỗi không cho chuyển, cskh thì không có phản hồi??"* — App Store VN `[MB_Bank_007 · 1★ · 25/11/2026]`
 2. *"Tệ. Tối ngày bị khoá ko chuyển khoản được vì lý do vi phạm lỗi ngân hàng nhưng không biết vi phạm qq gì nữa riết tệ thật"* — App Store VN `[MB_Bank_024 · 1★ · 23/11/2026]`
 3. *"Mình bị Công an yêu cầu chuyển tiền vì mình dính 'vụ án rửa tiền'"* — Khảo sát `S01` *(27/11/2026)*
 4. *"Lần đó là công an lừa số tiền lớn(9 chữ số)"* — Khảo sát `S08` *(27/11/2026)*
 5. *"Nạp tiền vào VISA a bị trừ tiền nhưng ngân hàng lại không thông báo lý do gì. Phải đến 1 tuần sau thì ngân hàng mới gửi thông tin"* — Khảo sát `S38` *(27/11/2026)*
-6. *"Dùng agribank, đi ăn không có tiền mặt nhưng không ck được với lí do bảo trì hệ thống. Đã xảy ra khá nhiều lần (5-7 lần). Ở lại quán rửa chén."* — Khảo sát `S39` *(27/11/2026)*
-7. *"Trả tiền subscribe dịch vụ claude, thẻ từ chối giao dịch và khóa luôn. Tới giờ mình vẫn chưa mở lại (TPBank)."* — Khảo sát `S40` *(27/11/2026)*
+6. *"Đợi được tầm 15 phút, mình lỡ thoát app ra trả lời tin nhắn nhóm trên Messenger, quay lại thì mất phiên chat và bị đẩy xuống xếp hàng lại từ đầu. Bực quá mình bỏ ngang luôn..."* — Phỏng vấn `P1` *(27/11/2026)*
+7. *"Còn cái màn hình cảnh báo trước khi quét Face ID trên app hiện tại rất dễ bị lướt qua... thành phản xạ cơ bắp rồi, cứ hiện popup xác nhận là mình đưa mặt vào quét trong chưa tới 1 giây chứ không bao giờ đọc nội dung bên trong."* — Phỏng vấn `P1` *(27/11/2026)*
+8. *"Mặc dù trc khi ck ngân hàng cũng có thông báo về việc có vấn đề nhưng chữ hơi nhỏ nên t ko để ý lắm."* — Phỏng vấn `P2` *(27/11/2026)*
+9. *"Nếu vấn đề phức tạp hơn thì phải chuyển sang tổng đài hoặc nhân viên hỗ trợ. Việc phải mô tả lại tình huống nhiều lần khá mất thời gian."* — Phỏng vấn `P3` *(27/11/2026)*
 
-## 4. Các nguồn có khớp nhau không (Triangulation)
+## 4. Các nguồn có khớp nhau không (Triangulation 3 nguồn)
 
-- **Chỗ khớp hoàn toàn:** Cả review App Store (`MB_Bank_007`, `MB_Bank_024`, `MoMo_021`) lẫn khảo sát (`23/29 = 79,3%` người từng nhắn hỗ trợ gặp vướng mắc; `S38`, `S39`, `S40`) đều xác nhận cùng một nút thắt: **khi giao dịch/thẻ bị chặn hoặc trừ tiền bất thường, người dùng không biết lý do và gặp bot menu cứng / ticket chờ quá lâu**.
-- **Chỗ lệch có ý nghĩa quan trọng:** Trên App Store công khai chỉ thấy `5/100 (5,0%)` ca E3 và **gần như không có** review kể chuyện bị giả công an lừa đảo; ngược lại, trong khảo sát kín `n = 40`, tới **14/40 (35,0%)** từng bị gọi/nhắn giục chuyển tiền giả công an/thuế (`S01`, `S08` mức thiệt hại tới 9 chữ số). Điều này **xác nhận giả định về thiên lệch nguồn**: nạn nhân lừa đảo ít viết review công khai lên App Store nên số đào data chỉ là **cận dưới** của quy mô rủi ro thực tế.
+- **Chỗ khớp mạnh across cả 3 nguồn:** Review App Store (`MB_Bank_007`, `MB_Bank_024`, `MoMo_021`), khảo sát (`23/29 = 79,3%` gặp vướng mắc CSKH/bot; `13/28 = 46,4%` mất ≥5 phút), và phỏng vấn (`P1` mất 45 phút + rớt hàng chờ sau 20h, `P3` mất 20–30 phút + phải kể lại nhiều lần) đều hội tụ vào cùng điểm nghẽn: **khi giao dịch bị chặn/treo hoặc trừ tiền bất thường, người dùng không có thông tin rõ ràng để biết bước tiếp theo và bị kẹt ở bot FAQ chung chung / chờ lâu sau 20h**.
+- **Chỗ lệch giữa dữ liệu công khai và người dùng thật:** App Store công khai chỉ ghi nhận `5/100 (5,0%)` ca E3 và gần như vắng bóng ca bị giả công an lừa đảo; trong khi khảo sát kín (`14/40 = 35,0%`, gồm `S01`, `S08`) và phỏng vấn (`P1` bị giả shipper đọc đúng tên/SĐT, `P3` có người thân gặp tin nhắn giả ngân hàng) cho thấy **tỉ lệ gặp lừa đảo giục chuyển tiền ngoài đời cao hơn rất nhiều so với review công khai**.
+- **3 phát hiện MỚI / NGƯỢC với giả thuyết ban đầu từ phỏng vấn sâu `P1–P3`:**
+  1. **Alert fatigue & phản xạ cơ bắp Face ID (`P1`, `P2`):** Không chỉ người ít rành công nghệ — ngay cả người trẻ rành công nghệ cũng lướt qua cảnh báo chữ nhỏ trong `<1 giây` khi đang vội/đa nhiệm → cảnh báo của E3 phải ngắn, nổi bật, **nêu đúng dữ kiện cụ thể của giao dịch** (mã TX, số tiền, dấu hiệu rủi ro cụ thể) thay vì thông báo chung chung.
+  2. **Nỗi đau "kể lại từ đầu" khi chuyển tư vấn viên (`P3`) & rớt hàng chờ sau 20h (`P1`):** Người dùng vẫn muốn dùng kênh chính thức trong app vì độ tin cậy (`P3`), nên công cụ `handoff_to_agent` kèm **bản tóm tắt có cấu trúc + mã ticket + hotline 24/7 ngoài giờ** giải quyết đúng điểm đau thật.
+  3. **Một bộ phận người dùng bỏ qua chatbot gọi thẳng hotline (`P2`):** Nhắc nhóm không phóng đại rằng 100% người dùng sẽ chat bot; giá trị cốt lõi là những ai vào kênh hỗ trợ được phân loại đúng, cấp mã tra soát / chuyển khẩn ngay trong vài giây.
 
 ## 5. Kết luận
 
-- Giả thuyết ở [`evidence/hypothesis.md`](hypothesis.md): **ĐÚNG** và được củng cố mạnh hơn ở 2 điểm thiết kế cốt lõi:
-  1. **Nỗi đau bot cứng/chậm là rất lớn (`79,3%` người từng liên hệ CSKH gặp vướng mắc)** → chứng minh giá trị của luồng phân loại 3 bước + tóm tắt chuyển tư vấn viên khẩn ngay.
-  2. **Rủi ro bị thao túng ép chuyển tiền cực phổ biến (`35,0%`) trong khi `42,5%` chưa nhận thức đầy đủ rủi ro sau khi quét Face ID** → củng cố tuyệt đối luật cứng: AI không bao giờ tự nhả giao dịch (`release_transaction` bị chặn ở tầng code) và tiếp tục giữ ca nghi lừa đảo kể cả khi `face_verified = true`.
-- **Điều vẫn chưa biết (sẽ làm rõ qua phỏng vấn P1–P3 tối 27/11):** Diễn biến tâm lý cụ thể trong 5 phút đầu khi người dùng bị giục chuyển tiền hoặc kẹt tại quầy — câu cảnh báo ngắn gọn kiểu nào khiến họ dừng lại thay vì cáu gắt bỏ qua.
+- Giả thuyết ở [`evidence/hypothesis.md`](hypothesis.md): **ĐÚNG** và được tinh chỉnh sâu hơn ở 3 điểm thiết kế sản phẩm từ phỏng vấn `P1–P3`: (1) cảnh báo phải gắn ngữ cảnh giao dịch cụ thể để phá vỡ *alert fatigue* `<1 giây` khi quét Face ID, (2) tóm tắt cấu trúc khi `handoff_to_agent` để khách không phải kể lại từ đầu, và (3) giữ cứng luật **không tự nhả tiền** + **không hứa hoàn tiền/mốc giờ hoàn tiền** nếu chưa có kết quả tra soát.
+- **Bước tiếp theo (cho +5đ bonus `validation/log.md`):** Chạy phiên dùng thử 3 phút với **`P1`** và **`P3`** vào ngày 28/11 trên bản chạy thử Web UI (`python run.py`) với model thật.
 
-## Lịch hẹn phỏng vấn sâu (dùng cho CP2 — chỉ ghi vai và giờ, không tên)
+## Nhật ký hoàn thành phỏng vấn sâu (không ghi tên thật)
 
-| Vai | Giờ hẹn | Đã xong? |
-|---|---|---|
-| P1 · Học viên đại học dùng App ngân hàng/MoMo (từng gặp cuộc gọi giả công an) | Tối 27/11 · 20:00 | ☐ |
-| P2 · Người đi làm dùng ví/thẻ thanh toán thường xuyên (từng bị chặn/khóa thẻ) | Tối 27/11 · 20:30 | ☐ |
-| P3 · Người thân / người dùng phổ thông hay chuyển khoản | Tối 27/11 · 21:00 | ☐ |
+| Mã | Vai | Thời điểm | Trạng thái | Cam kết test demo 28/11 |
+|---|---|---|:---:|:---:|
+| P1 | Học viên AI20K (ngoài nhóm, dùng app ngân hàng & ví) | 27/11/2026 | ☑ Đã xong ([`P1.md`](interviews/P1.md)) | **Có** |
+| P2 | Sinh viên dùng app ngân hàng BIDV (ngoài nhóm) | 27/11/2026 | ☑ Đã xong ([`P2.md`](interviews/P2.md)) | Không |
+| P3 | Người dùng app ngân hàng thường xuyên (ngoài nhóm) | 27/11/2026 | ☑ Đã xong ([`P3.md`](interviews/P3.md)) | **Có** |
