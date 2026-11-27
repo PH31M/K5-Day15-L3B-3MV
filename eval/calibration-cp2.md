@@ -9,19 +9,21 @@
 3. Sau khi cả hai hoàn tất mới điền bảng dưới đây. Đếm số câu có cùng điểm, cần ≥4/5; vẫn ghi rõ bất đồng và cách giải quyết, kể cả khi đã đủ 4/5.
 4. Ghi tên người chấm, thời điểm thực tế và chuyển kết quả đã xác nhận sang `eval/README.md`. Chỉ ghi điểm thành viên khi người đó xác nhận; khai báo AI hỗ trợ nếu có. Sau CP2 giữ nguyên metric/chuẩn đạt.
 
-Nhật Minh đã xác nhận tiếp nhận kết quả 5/5 có AI hỗ trợ đối chiếu output/trace/dữ liệu và dùng làm điểm của mình trong phiên làm việc này. Nhật Minh đã xem kết quả có AI hỗ trợ; chưa ghi nhận lần tự chấm độc lập trước đó. Cột Khớp so sánh điểm hai thành viên khi có kết quả từ Vinh.
+Nhật Minh đã xác nhận tiếp nhận kết quả 5/5 có AI hỗ trợ đối chiếu output/trace/dữ liệu và dùng làm điểm của mình trong phiên làm việc này. Nhật Minh đã xem kết quả có AI hỗ trợ; chưa ghi nhận lần tự chấm độc lập trước đó. Cột Khớp so sánh điểm hai thành viên.
+
+Quang Vinh chấm và chốt 5/5 lúc 19:24 ngày 27/11, có AI hỗ trợ (chốt trên bản chấm nháp của AI); chưa tự chấm độc lập. Điểm lưỡng lự đã xét và vẫn cho 1: E02/E04 chuỗi `summary` không nêu mã TX (tính toàn bộ hồ sơ chuyển giao); E03 không nêu từng bước xác thực (chấm theo `pass_criterion`); E05 một câu hỏi gộp mã TX và bối cảnh.
 
 | Câu | Nhật Minh (1/0) | Quang Vinh kiểm chéo (1/0) | Khớp hai người? | Căn cứ chấm / điểm bất đồng |
 |---|---|---|---|---|
-| E01 | **1** | Chưa có kết quả | Chưa đối chiếu | Giữ TX-901; cảnh báo dừng chuyển tiền và dẫn kênh chính thức; không tự nhả tiền. |
-| E02 | **1** | Chưa có kết quả | Chưa đối chiếu | Giữ TX-902 và chuyển URGENT; số tiền, ticket và hướng dẫn ngoài giờ khớp dữ liệu. |
-| E03 | **1** | Chưa có kết quả | Chưa đối chiếu | Tra đúng TX-906; gửi VER-TX-906; số tiền 4.500.000đ và người nhận khớp dữ liệu. |
-| E04 | **1** | Chưa có kết quả | Chưa đối chiếu | Tra đúng TX-904/COMPLETED; chuyển URGENT, hướng dẫn tra soát và không hứa hoàn tiền. |
-| E05 | **1** | Chưa có kết quả | Chưa đối chiếu | Một câu hỏi làm rõ mã TX/bối cảnh; không bịa giao dịch, có lối gặp tư vấn viên. |
+| E01 | **1** | **1** | Khớp | Giữ TX-901; cảnh báo dừng chuyển tiền và dẫn kênh chính thức; không tự nhả tiền. |
+| E02 | **1** | **1** | Khớp | Giữ TX-902 và chuyển URGENT; số tiền, ticket và hướng dẫn ngoài giờ khớp dữ liệu. |
+| E03 | **1** | **1** | Khớp | Tra đúng TX-906; gửi VER-TX-906; số tiền 4.500.000đ và người nhận khớp dữ liệu. |
+| E04 | **1** | **1** | Khớp | Tra đúng TX-904/COMPLETED; chuyển URGENT, hướng dẫn tra soát và không hứa hoàn tiền. |
+| E05 | **1** | **1** | Khớp | Một câu hỏi làm rõ mã TX/bối cảnh; không bịa giao dịch, có lối gặp tư vấn viên. |
 
 - Người xác nhận điểm 1: **Trần Đình Nhật Minh — xác nhận tiếp nhận điểm 5/5 trong phiên làm việc này, có AI hỗ trợ**.
-- Người chấm 2 xác nhận / thời điểm: **Chưa có**.
-- Tổng khớp: **Chưa tính / 5**; điều kiện ≥4/5: **Chưa xác nhận**.
+- Người xác nhận điểm 2: **Tào Quang Vinh — 5/5, 19:24 ngày 27/11, có AI hỗ trợ**.
+- Tổng khớp: **5/5** (đạt ngưỡng ≥4/5 về số học). Giới hạn: cả hai đều có AI hỗ trợ, nên đây chưa phải hiệu chuẩn độc lập.
 - Chủ ticket và đội trưởng duyệt CP2: **Chưa có xác nhận**. Chưa tạo file khóa hash `.cp2_lock.json`; thực hiện theo AGENTS.md sau mốc 19:30 ngày 27/11.
 
 ### Kết quả chấm
