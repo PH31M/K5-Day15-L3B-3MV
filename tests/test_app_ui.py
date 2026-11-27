@@ -63,6 +63,12 @@ class TestAppChat(unittest.TestCase):
         self.assertEqual(data["tx"]["amount_vnd"], 4500000)
         self.assertEqual(data["tx"]["status"], "HELD")
 
+    def test_advisor_card_shows_case_summary_even_when_trace_is_truncated(self):
+        data = json.loads(self.chat("Em đang ở quầy viện phí đóng tiền cấp cứu, TX-902 bị chặn, xử lý gấp giúp em!"))
+        summary = data["approvals"][0]["summary"]
+        self.assertTrue(summary.startswith("Khách viết:"), summary)
+        self.assertIn("TX-902", summary)
+
     def test_busy_port_is_detected(self):
         with socket.socket() as taken:
             taken.bind(("127.0.0.1", 0))
