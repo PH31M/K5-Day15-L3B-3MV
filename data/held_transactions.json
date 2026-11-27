@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "dataset": "held_transactions_synthetic_v1",
+    "seed": 20261127,
+    "label": "synthetic",
+    "note": "Dữ liệu giả lập 100% (tên và mã dựng), tuyệt đối KHÔNG chứa ngưỡng phát hiện gian lận, số tài khoản thật, OTP hay PII thật."
+  },
+  "transactions": [
+    {
+      "tx_id": "TX-901",
+      "user_alias": "U-01",
+      "status": "HELD",
+      "amount_vnd": 18500000,
+      "recipient_label": "TK-LA-01 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 21:15",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để kiểm tra an toàn bổ sung theo quy trình bảo vệ người dùng.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-902",
+      "user_alias": "U-02",
+      "status": "HELD",
+      "amount_vnd": 6200000,
+      "recipient_label": "BENH VIEN DA KHOA MAU (Quầy thu viện phí)",
+      "created_at_vn": "2026-11-26 22:08",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ do phát sinh ngoài khung giờ thường lệ.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-903",
+      "user_alias": "U-03",
+      "status": "HELD",
+      "amount_vnd": 12000000,
+      "recipient_label": "TK-LA-02 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 19:40",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đang tạm giữ do đăng nhập từ thiết bị lạ và cần xác minh chủ ví.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-904",
+      "user_alias": "U-04",
+      "status": "COMPLETED",
+      "amount_vnd": 3400000,
+      "recipient_label": "MERCHANT-MAU-88",
+      "created_at_vn": "2026-11-26 18:05",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đã hoàn tất và ghi nợ trên ví.",
+      "completed_flag": true
+    },
+    {
+      "tx_id": "TX-905",
+      "user_alias": "U-05",
+      "status": "HELD",
+      "amount_vnd": 25000000,
+      "recipient_label": "TK-LA-03 (Chuyển nhanh liên ngân hàng)",
+      "created_at_vn": "2026-11-26 20:30",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để rà soát an toàn.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-906",
+      "user_alias": "U-06",
+      "status": "HELD",
+      "amount_vnd": 4500000,
+      "recipient_label": "NHA TRO MAU Q7 (Đã từng chuyển 3 lần trước)",
+      "created_at_vn": "2026-11-26 20:50",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đang chờ bước xác thực bổ sung từ chủ ví.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-907",
+      "user_alias": "U-07",
+      "status": "HELD",
+      "amount_vnd": 9800000,
+      "recipient_label": "TK-LA-04 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 21:45",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để rà soát an toàn.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-908",
+      "user_alias": "U-08",
+      "status": "COMPLETED",
+      "amount_vnd": 1500000,
+      "recipient_label": "DICH VU GAME MAU",
+      "created_at_vn": "2026-11-26 14:12",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đã hoàn tất.",
+      "completed_flag": true
+    },
+    {
+      "tx_id": "TX-909",
+      "user_alias": "U-09",
+      "status": "HELD",
+      "amount_vnd": 15000000,
+      "recipient_label": "TK-LA-05 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 22:30",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để bảo vệ tài khoản.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-910",
+      "user_alias": "U-10",
+      "status": "HELD",
+      "amount_vnd": 850000,
+      "recipient_label": "PHONG KHAM MAU (Đã từng thanh toán 1 lần)",
+      "created_at_vn": "2026-11-26 21:10",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đang chờ bước xác thực chủ ví.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-911",
+      "user_alias": "U-11",
+      "status": "HELD",
+      "amount_vnd": 30000000,
+      "recipient_label": "TK-LA-06 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 20:15",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để kiểm tra an toàn bổ sung.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-912",
+      "user_alias": "U-12",
+      "status": "HELD",
+      "amount_vnd": 2100000,
+      "recipient_label": "CUA HANG DIEN MAY MAU",
+      "created_at_vn": "2026-11-26 16:20",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đang chờ xác thực sinh trắc học bổ sung.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-913",
+      "user_alias": "U-13",
+      "status": "HELD",
+      "amount_vnd": 7500000,
+      "recipient_label": "TK-LA-07 (Tài khoản mới chưa từng giao dịch)",
+      "created_at_vn": "2026-11-26 23:05",
+      "face_verified": false,
+      "hold_reason_public": "Phát hiện truy cập bất thường; giao dịch đang tạm giữ.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-914",
+      "user_alias": "U-14",
+      "status": "HELD",
+      "amount_vnd": 5000000,
+      "recipient_label": "TRUONG DAI HOC MAU (Học phí)",
+      "created_at_vn": "2026-11-26 19:55",
+      "face_verified": true,
+      "hold_reason_public": "Giao dịch đang tạm giữ để kiểm tra an toàn.",
+      "completed_flag": false
+    },
+    {
+      "tx_id": "TX-915",
+      "user_alias": "U-15",
+      "status": "COMPLETED",
+      "amount_vnd": 8900000,
+      "recipient_label": "TK-LA-08 (Chuyển khoản nhanh)",
+      "created_at_vn": "2026-11-26 11:40",
+      "face_verified": false,
+      "hold_reason_public": "Giao dịch đã hoàn tất.",
+      "completed_flag": true
+    }
+  ]
+}

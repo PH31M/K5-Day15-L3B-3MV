@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "dataset": "support_policies_public_v1",
+    "checked_date": "2026-11-27",
+    "note": "Tóm lược nguyên tắc hỗ trợ công khai (mô phỏng bối cảnh ví điện tử VN: trợ lý 24/7, nhân viên trực 8h–20h, hotline khẩn cấp giả lập)."
+  },
+  "policies": [
+    {
+      "policy_id": "POL-SCAM-01",
+      "topic": "lua_dao",
+      "rule_summary": "Cơ quan công an, viện kiểm sát, thuế, ngân hàng KHÔNG bao giờ yêu cầu người dân chuyển tiền để 'xác minh hồ sơ', 'chứng minh vô tội' hay 'mở khóa tài khoản'. Ngay cả khi chính chủ ví đã xác thực khuôn mặt, giao dịch bị thao túng vẫn có rủi ro mất tiền không thể thu hồi.",
+      "official_channel": "Giữ nguyên trạng thái tạm chặn, dừng mọi liên lạc với bên giục chuyển tiền và kiểm tra qua kênh chính thức của cơ quan nhà nước hoặc tổng đài chính thức in trên ứng dụng (hotline mẫu: 1900-0000-MAU)."
+    },
+    {
+      "policy_id": "POL-HOLD-02",
+      "topic": "gap_that",
+      "rule_summary": "Trợ lý ảo tuyệt đối không có quyền tự nhả giao dịch đang bị tạm giữ (release_transaction). Với tình huống khẩn cấp hợp lệ (ví dụ đóng viện phí, thanh toán gấp), hệ thống ưu tiên chuyển hồ sơ kèm tóm tắt đầy đủ sang tư vấn viên trực (8h–20h) hoặc hàng chờ ưu tiên khẩn cấp.",
+      "official_channel": "Chuyển tư vấn viên qua handoff_to_agent kèm mã giao dịch và mức độ ưu tiên; ngoài giờ 20h hướng dẫn gọi hotline khẩn 24/7 của ví mẫu."
+    },
+    {
+      "policy_id": "POL-ATO-03",
+      "topic": "chiem_tai_khoan",
+      "rule_summary": "Khi có dấu hiệu nghi bị chiếm tài khoản hoặc giao dịch lạ đã hoàn tất mà khách khẳng định không thực hiện: giữ toàn bộ giao dịch đang treo, tạo yêu cầu chuyển tư vấn viên khẩn để xác nhận khóa ví (AI không tự khóa vĩnh viễn khi chưa có xác nhận) và hướng dẫn quy trình lập yêu cầu tra soát — tuyệt đối không hứa chắc chắn hoàn tiền.",
+      "official_channel": "Chuyển tư vấn viên khẩn cấp + hướng dẫn gửi yêu cầu tra soát trong mục Lịch sử giao dịch."
+    },
+    {
+      "policy_id": "POL-PRIVACY-04",
+      "topic": "nguoi_than",
+      "rule_summary": "Không tiết lộ thông tin giao dịch hoặc thực hiện thao tác thay chủ ví khi người thân/bên thứ ba nhắn hộ. Chuyển tư vấn viên hoặc hướng dẫn chính chủ ví liên hệ từ tài khoản/số điện thoại đã đăng ký.",
+      "official_channel": "Hướng dẫn chính chủ ví nhắn từ ứng dụng đã đăng nhập hoặc gọi tổng đài chính thức."
+    },
+    {
+      "policy_id": "POL-SECRET-05",
+      "topic": "bao_mat",
+      "rule_summary": "Tuyệt đối không hỏi, không yêu cầu cung cấp và không lặp lại mã OTP, mật khẩu, mã PIN hay số thẻ đầy đủ. Tuyệt đối không tiết lộ ngưỡng tiền, số lần giao dịch hay quy tắc nội bộ của hệ thống phát hiện gian lận.",
+      "official_channel": "Nhắc người dùng bảo mật OTP/mật khẩu và không cung cấp cho bất kỳ ai."
+    },
+    {
+      "policy_id": "POL-SCOPE-06",
+      "topic": "ngoai_pham_vi",
+      "rule_summary": "Trợ lý chỉ hỗ trợ xử lý ban đầu các giao dịch ví đang bị tạm chặn hoặc nghi ngờ an toàn. Không tư vấn đầu tư/cổ phiếu/tiền số và không tự thực hiện chuyển tiền thay người dùng.",
+      "official_channel": "Từ chối lịch sự, nêu rõ phạm vi hỗ trợ."
+    }
+  ]
+}

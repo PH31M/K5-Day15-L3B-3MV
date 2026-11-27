@@ -40,6 +40,6 @@ Khung chỉ dùng thư viện chuẩn của Python. Thêm thư viện thì ghi v
 
 ## Quy ước của nhóm
 
-- Ngôn ngữ trả lời người dùng: __
-- Phong cách code / đặt tên: __
-- Ai duyệt thay đổi do agent tạo trước khi commit: __
+- Ngôn ngữ trả lời người dùng: Tiếng Việt (bình tĩnh, ngắn gọn, có căn cứ từ dữ liệu/chính sách)
+- Phong cách code / đặt tên: Python 3.10+ stdlib-first, snake_case, chạy được bằng `python3 run.py` không cần cài Node/npm
+- Ai duyệt thay đổi do agent tạo trước khi commit: Chủ ticket của file tương ứng (xem `docs/TICKETS.md`) và Đội trưởng Phạm Hoàng Đức Minh duyệt trước mỗi mốc CP
