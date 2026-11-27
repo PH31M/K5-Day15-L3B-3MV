@@ -75,6 +75,26 @@ DUAL_LOCK_REFUND_RE = re.compile(
     r"(?i)(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ)).*(hoàn\s+(?:lại|tiền))|(hoàn\s+(?:lại|tiền)).*(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ))"
 )
 
+# Tín hiệu cần người thật, xét bằng code để không phụ thuộc model có xếp đúng nhóm "gap_that" hay không.
+URGENT_NEED_RE = re.compile(
+    r"(?i)((?:cần|phải)[^.!?\n]{0,30}?(?:gấp|khẩn)|"
+    r"(?:thanh\s+toán|chuyển|trả|đóng|nộp|xử\s+lý)[^.!?\n]{0,20}?(?:gấp|khẩn)|"
+    r"(?:đứng|chờ|kẹt)[^.!?\n]{0,25}?\b(?:quầy|quán)\b)"
+)
+HUMAN_REQUEST_RE = re.compile(
+    r"(?i)(?:gặp|nói\s+chuyện\s+với|kết\s+nối(?:\s+với)?|chuyển\s+(?:cho|sang))\s+"
+    r"(?:nhân\s+viên|tư\s+vấn\s+viên|tổng\s+đài\s+viên|người\s+thật)"
+)
+DEBITED_NOT_RECEIVED_RE = re.compile(
+    r"(?i)(?:bị\s+trừ|đã\s+trừ|trừ\s+tiền)[^\n]{0,60}?(?:chưa|không)\s+(?:nhận|tới|đến|có|thấy)"
+)
+NEGATED_ESCALATION_RE = re.compile(
+    r"(?i)(?:không|chưa|chẳng)\s+(?:cần\s+|phải\s+|muốn\s+)?(?:phải\s+)?(?:gấp|vội|khẩn|gặp)"
+)
+# Chỉ các nhóm router chưa tự chuyển người mới cần xét thêm; lừa đảo / người thân / dò ngưỡng giữ nguyên nhánh riêng.
+ESCALATABLE_CATEGORIES = {"chua_ro", "xac_minh_thuong"}
+HOTLINE = "1900-0000-MAU"
+
 VALID_CATEGORIES = {
     "lua_dao",
     "gap_that",
@@ -123,6 +143,7 @@ LUẬT CỨNG TUYỆT ĐỐI:
 3. KHÔNG BAO GIỜ nêu con số ngưỡng phát hiện gian lận hay quy tắc nội bộ.
 4. KHÔNG BAO GIỜ hỏi hoặc lặp lại OTP, mật khẩu, mã PIN hay số thẻ.
 5. Nếu là người thân nhắn thay (category=nguoi_than): tuyệt đối KHÔNG tiết lộ số tiền hay người nhận của giao dịch.
+6. Chỉ nói đã chuyển tư vấn viên khi actions_executed có handoff_to_agent; khi đó nêu nguyên văn ticket_id. Không nói "sẽ chuyển" cho việc chưa làm.
 """
 
 
@@ -405,11 +426,43 @@ def _build_template_response(
         "Để tôi kiểm tra chính xác mà không đoán bừa, bạn vui lòng cho biết mã giao dịch đang bị chặn (ví dụ: TX-901) "
         "và bạn có đang cần thanh toán khẩn cấp hoặc nghi ngờ bị trừ tiền lạ không?"
     )
-    lines.append("Nếu đang gấp hoặc nghi lộ tài khoản, hãy nhắn 'gặp tư vấn viên' để tôi chuyển người trực ngay.")
+    if not any(a.get("action") == "handoff_to_agent" for a in actions):
+        lines.append("Nếu đang gấp hoặc nghi lộ tài khoản, hãy nhắn 'gặp tư vấn viên' để tôi chuyển người trực ngay.")
     return "\n".join(lines)
 
 
-def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dict, had_secret: bool) -> list[dict]:
+def _escalation_priority(redacted_text: str) -> str:
+    """Mức ưu tiên khi tin nhắn cho thấy cần người thật: URGENT, HIGH, hoặc '' nếu không cần."""
+    text = NEGATED_ESCALATION_RE.sub(" ", redacted_text)
+    if URGENT_NEED_RE.search(text):
+        return "URGENT"
+    if HUMAN_REQUEST_RE.search(text) or DEBITED_NOT_RECEIVED_RE.search(text):
+        return "HIGH"
+    return ""
+
+
+def _case_summary(redacted_text: str, detail: str) -> str:
+    """Tóm tắt ca cho tư vấn viên: lời khách (đã che bí mật) đứng trước để không bị cắt mất."""
+    excerpt = " ".join(redacted_text.split())[:180]
+    return f'Khách viết: "{excerpt}". {detail}'
+
+
+def _ensure_handoff_visible(output: str, actions: list[dict]) -> str:
+    """Đã chuyển người thì câu trả lời phải có mã ticket (lấy từ kết quả tool) và hotline ngoài giờ."""
+    ticket = next((a.get("ticket_id") for a in actions if a.get("action") == "handoff_to_agent"), "")
+    if not ticket:
+        return output
+    missing = []
+    if ticket not in output:
+        missing.append(f"Đã chuyển tư vấn viên, mã hồ sơ: {ticket}.")
+    if HOTLINE not in output:
+        missing.append(f"Giờ trực 8h–20h; ngoài giờ gọi hotline khẩn 24/7: {HOTLINE}.")
+    return "\n".join([output, " ".join(missing)]) if missing else output
+
+
+def _execute_policy_actions(
+    category: str, reason: str, tx_id: str, tx_info: dict, had_secret: bool, redacted_text: str
+) -> list[dict]:
     """Bước 3a: Router chính sách tất định — chỉ gọi @tool đảo được hoặc bản nháp chờ duyệt."""
     actions: list[dict] = []
     if category == "lua_dao":
@@ -423,7 +476,7 @@ def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dic
                 tx_id or "NO-TX",
                 "gap_that",
                 "URGENT",
-                f"Ca gấp hợp lệ ({reason}). Chờ tư vấn viên xác minh mở chặn.",
+                _case_summary(redacted_text, f"Ca gấp hợp lệ ({reason}). Chờ tư vấn viên xác minh mở chặn."),
             )
         )
     elif category == "hai_yeu_cau":
@@ -445,7 +498,10 @@ def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dic
                 tx_id or "NO-TX",
                 "chiem_tai_khoan",
                 "URGENT",
-                f"Nghi chiếm tài khoản / trừ tiền lạ ({reason}). Cần tư vấn viên xác minh & hướng dẫn tra soát.",
+                _case_summary(
+                    redacted_text,
+                    f"Nghi chiếm tài khoản / trừ tiền lạ ({reason}). Cần tư vấn viên xác minh & hướng dẫn tra soát.",
+                ),
             )
         )
     elif category == "xac_minh_thuong" and tx_info.get("found") and tx_info.get("status") == "HELD":
@@ -458,6 +514,17 @@ def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dic
                 "bao_mat_otp",
                 "HIGH",
                 "Người dùng tự nhập OTP/số thẻ trong chat (đã ẩn). Cần tư vấn viên hỗ trợ an toàn.",
+            )
+        )
+
+    priority = _escalation_priority(redacted_text) if category in ESCALATABLE_CATEGORIES else ""
+    if priority and not any(a.get("action") == "handoff_to_agent" for a in actions):
+        actions.append(
+            handoff_to_agent(
+                tx_id or "NO-TX",
+                category,
+                priority,
+                _case_summary(redacted_text, "Cần tư vấn viên tiếp nhận (gấp, xin gặp người, hoặc đã trừ tiền chưa tới)."),
             )
         )
     return actions
@@ -507,7 +574,7 @@ def answer(text: str, *, model_fn: Callable[[str, str], dict] = call_model) -> d
 
     # === BƯỚC 3: DETERMINISTIC POLICY ROUTER + GROUNDED RESPONSE ===
     policy = lookup_policy(POLICY_TOPIC_MAP.get(category, "gap_that"))
-    actions = _execute_policy_actions(category, reason, tx_id, tx_info, had_secret)
+    actions = _execute_policy_actions(category, reason, tx_id, tx_info, had_secret, redacted_text)
 
     # lua_dao dùng mẫu tất định: cảnh báo dừng + kênh chính thức không được phụ thuộc lời văn của model.
     if is_fake or (tx_id and not tx_info.get("found")) or category in ("nguoi_than", "lua_dao"):
@@ -530,4 +597,5 @@ def answer(text: str, *, model_fn: Callable[[str, str], dict] = call_model) -> d
             category, tx_id, tx_info, policy, actions, had_secret
         )
 
+    output = _ensure_handoff_visible(output, actions)
     return _result(output, secrets, category, reason, tx_id, policy, actions, had_secret)
