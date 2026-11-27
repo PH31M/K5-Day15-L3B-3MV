@@ -15,7 +15,13 @@ import sys
 import threading
 import time
 import webbrowser
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+VN_TZ = timezone(timedelta(hours=7))
+
+
+def _now_vn() -> str:
+    return datetime.now(VN_TZ).strftime("%H:%M:%S")
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 for _stream in (sys.stdout, sys.stderr, sys.stdin):
@@ -141,7 +147,7 @@ def _provider_status() -> dict:
 
 def _build_approval_items(events: list[dict], meta: dict) -> list[dict]:
     created: list[dict] = []
-    now_utc = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+    now_vn = _now_vn()
     tx_id = meta.get("tx_id") or "NO-TX"
     category = meta.get("category") or "chua_ro"
 
@@ -164,7 +170,7 @@ def _build_approval_items(events: list[dict], meta: dict) -> list[dict]:
                     "priority": "URGENT",
                     "summary": f"Yêu cầu duyệt khóa ví ({draft_id}) liên quan {tx_id}. AI không tự khóa vĩnh viễn.",
                     "status": "PENDING",
-                    "updated_at": now_utc,
+                    "updated_at": now_vn,
                 }
                 ADVISOR_QUEUE[item_id] = item
                 created.append(dict(item))
@@ -183,7 +189,7 @@ def _build_approval_items(events: list[dict], meta: dict) -> list[dict]:
                     "priority": priority,
                     "summary": summary or f"Hồ sơ chuyển tư vấn viên xử lý {tx_id}.",
                     "status": "PENDING",
-                    "updated_at": now_utc,
+                    "updated_at": now_vn,
                 }
                 ADVISOR_QUEUE[item_id] = item
                 created.append(dict(item))
@@ -200,6 +206,7 @@ HTML_PAGE = """<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bàn Điều Phối An Toàn Giao Dịch · E3 (Nhóm 3MV)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235560ea' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E" />
   <style>
     :root {
       --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -489,7 +496,11 @@ HTML_PAGE = """<!DOCTYPE html>
     .card-ref { display: inline-flex; align-items: center; gap: 7px; font: 700 12.5px var(--mono); }
     .card-ref [data-icon] { color: var(--tone); }
     .card-summary { font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-summary.expandable { cursor: pointer; }
+    .card-summary.open { display: block; -webkit-line-clamp: unset; }
     .card-actions { display: flex; gap: 8px; }
+    .msg.system { align-self: center; max-width: 92%; }
+    .sys-note { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 99px; font-size: 13px; color: var(--tone, var(--ink-2)); background: var(--tone-bg, var(--raise-2)); border: 1px solid color-mix(in srgb, var(--tone, var(--line)) 35%, transparent); }
     .btn-approve, .btn-reject { flex: 1; min-height: 34px; border-radius: 11px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: transform 160ms var(--ease), filter 160ms var(--ease), background-color 160ms var(--ease); }
     .btn-approve { border: 0; color: #fff; background: linear-gradient(135deg, #5560ea, #2f74d8); }
     .btn-approve:hover { transform: translateY(-1px); filter: brightness(1.12); }
@@ -902,9 +913,23 @@ HTML_PAGE = """<!DOCTYPE html>
         m.col.appendChild(steps);
       }
       if (trace && trace.model) {
-        m.col.appendChild(el("div", "msg-meta", trace.model + " · " + (trace.tokens_in || 0) + " token vào / " + (trace.tokens_out || 0) + " ra"));
+        m.col.appendChild(el("div", "msg-meta", trace.model_calls
+          ? trace.model + " · " + (trace.tokens_in || 0) + " token vào / " + (trace.tokens_out || 0) + " ra"
+          : "Chặn bằng code · không gọi model"));
       }
       scrollToRow(m.row);
+    }
+
+    function addSystemMessage(text, tone, iconName) {
+      const row = el("div", "msg system tone-" + tone);
+      const note = el("div", "sys-note");
+      note.appendChild(iconSpan(iconName, 14));
+      const span = el("span");
+      decorate(span, text);
+      note.appendChild(span);
+      row.appendChild(note);
+      $("chatStream").appendChild(row);
+      $("chatStream").scrollTop = $("chatStream").scrollHeight;
     }
 
     function decide(meta, tools) {
@@ -1000,8 +1025,9 @@ HTML_PAGE = """<!DOCTYPE html>
     function renderMetrics(trace) {
       const t = trace || {};
       $("statTokens").textContent = (t.tokens_in || 0).toLocaleString("vi-VN") + " / " + (t.tokens_out || 0).toLocaleString("vi-VN");
-      $("statModel").textContent = t.model || "Chưa gọi";
-      $("statModel").title = t.model || "";
+      const modelLabel = !t.model ? "Chưa gọi" : t.model_calls ? t.model : "Chặn bằng code";
+      $("statModel").textContent = modelLabel;
+      $("statModel").title = modelLabel;
       const ms = t.latency_ms || 0;
       $("statLatency").textContent = ms >= 1000 ? (ms / 1000).toFixed(1) + " s" : ms + " ms";
       $("statCalls").textContent = (t.model_calls || 0) + " model · " + (t.tool_calls || 0) + " tool";
@@ -1089,8 +1115,13 @@ HTML_PAGE = """<!DOCTYPE html>
         top.appendChild(el("span", "tag", label));
         card.appendChild(top);
         const summary = el("div", "card-summary", item.summary);
-        summary.title = item.summary;
         card.appendChild(summary);
+        requestAnimationFrame(() => {
+          if (summary.scrollHeight <= summary.clientHeight + 1) return;
+          summary.classList.add("expandable");
+          summary.title = "Bấm để xem đủ";
+          summary.addEventListener("click", () => summary.classList.toggle("open"));
+        });
         if (done) {
           card.appendChild(el("div", "msg-meta", "Cập nhật " + item.updated_at));
         } else {
@@ -1123,6 +1154,12 @@ HTML_PAGE = """<!DOCTYPE html>
         if (idx >= 0 && data.item) {
           approvals[idx] = data.item;
           renderQueue();
+          const it = data.item;
+          const ok = it.status === "APPROVED";
+          const what = it.kind === "lock_wallet"
+            ? (ok ? "Tư vấn viên đã duyệt khóa ví (" + it.ref_id + ")." : "Tư vấn viên không duyệt khóa ví (" + it.ref_id + ").")
+            : (ok ? "Tư vấn viên đã nhận hồ sơ " + it.ref_id + " và đang xử lý." : "Tư vấn viên đã từ chối hồ sơ " + it.ref_id + ".");
+          addSystemMessage(what + " · " + it.updated_at, ok ? "safe" : "muted", ok ? "check" : "block");
         }
       } catch (err) {
         console.error(err);
@@ -1132,6 +1169,7 @@ HTML_PAGE = """<!DOCTYPE html>
     function setBusy(value) {
       busy = value;
       $("sendBtn").disabled = value;
+      $("userInput").disabled = value;
       $("resetBtn").disabled = value;
       document.querySelectorAll(".preset-btn").forEach((b) => { b.disabled = value; });
       $("statePill").className = "state-pill" + (value ? " busy" : "");
@@ -1350,7 +1388,7 @@ class AppServerHandler(BaseHTTPRequestHandler):
                     self._send_json(404, {"error": "Không tìm thấy hồ sơ duyệt"})
                     return
                 item["status"] = decision
-                item["updated_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+                item["updated_at"] = _now_vn()
                 updated = dict(item)
             self._send_json(200, {"ok": True, "item": updated})
             return
@@ -1469,7 +1507,8 @@ def run_web(port: int = 8000) -> int:
             print(f"Cổng {candidate} đang có chương trình khác dùng, thử cổng kế tiếp.")
             continue
         try:
-            httpd = HTTPServer(("", candidate), AppServerHandler)
+            # Chỉ nghe trên máy này: người cùng Wi-Fi không gọi được /api/chat bằng API key của nhóm.
+            httpd = HTTPServer(("127.0.0.1", candidate), AppServerHandler)
         except OSError:
             continue
         port = candidate

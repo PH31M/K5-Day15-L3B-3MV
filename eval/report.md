@@ -34,7 +34,8 @@ Các ca này có thể được model thật phân loại khác; cần chạy l�
 2. **Đã xong lượt 1**: `python run.py eval` tạo CSV/JSONL mới đủ 25 câu, 0 lỗi kỹ thuật; không sửa output hoặc xóa câu trượt.
 3. **Nhật Minh đã duyệt bản chấm**: AI ghi hai cột được phép `pass`/`ghi_chu`; E03/E09 được chấm 0 thận trọng, giữ căn cứ để Quang Vinh kiểm chéo. Chi tiết tại [review-run-1.md](review-run-1.md).
 4. `python run.py score eval/run-1.csv` đã tính **16/25 (64%)**, chưa đạt. Bàn giao Đức Minh ghi dòng kết quả được phép trong `spec.md` §7; không sửa phần khóa.
-5. **Đã có nhóm lỗi thật để bàn giao** ở mục 2; Quang Vinh phụ trách sửa lõi trước lượt 2 CP4. Video khoảng 30 giây có input/output và bằng chứng model thật/token vẫn chưa quay.
+5. **Đã có nhóm lỗi thật để bàn giao** ở mục 2; Quang Vinh phụ trách sửa lõi trước lượt 2 CP4.
+6. **Đã quay video 31 giây** có input/output và bằng chứng model thật/token: [xem trên Google Drive](https://drive.google.com/file/d/134aRX9vLyNB_7lrTttfvu0Coh78Zv99j/view?usp=sharing). Quay màn hình Web UI ngày 28/11 (nhánh `feat/xray-stage-ui`), model `openai/gpt-4.1-mini` qua OpenRouter: ca lừa đảo TX-901 (giữ giao dịch + cảnh báo dừng), ca viện phí TX-902 (chuyển tư vấn viên `ADV-TX-902-U`, người duyệt nhận ca), ca gửi OTP + đòi vượt quyền (che bí mật, chặn bằng code, không gọi model), và trace của lượt TX-902: 2 lần gọi model, **1.402 token vào / 88 ra, 3,5 s, ~$0,0007**. Đoạn chờ model được tua nhanh và có nhãn ghi rõ; lồng tiếng tổng hợp. Video là bản demo, không phải lượt eval và không tính vào `run-1`.
 
 ## 1. Kết quả
 
