@@ -1,11 +1,4 @@
-# Giả thuyết — viết TRƯỚC khi tìm bằng chứng (5 phút, commit ngay)
+# Giả thuyết pain — 3MV · Track E (E3)
 
-> Điền ở guide bước 1.1. Ôn lại: ngày 2 · lab ngày 2.
-> Viết **trước** khi đọc dòng data đầu tiên hay hỏi người đầu tiên, để không sửa cho khớp kết quả. Kết quả ngược giả thuyết vẫn đủ điểm nếu số là thật.
-
-- Ngày giờ viết: __
-- Người dùng chính (một vai cụ thể): __
-- **Mình nghĩ:** [ai] gặp khó khi [việc] vì [lý do], hậu quả là [mất gì].
-- **Có thể còn cách giải thích khác:** __
-- **Mình đúng nếu thấy:** [một con số nhóm tự chọn] — vd "≥2/3 người kể được một lần như thế trong 1 tháng qua" hoặc "≥x/N học viên bỏ ở bước này" *(ví dụ)*
-- **Nguồn sẽ dùng** (≥1 nguồn đạt ngưỡng, guide 1.2): [ ] đào data · [ ] phỏng vấn ≥3 · [ ] khảo sát ≥20 — nguồn chính: __ · nguồn để kiểm lại: __
+- **Mình nghĩ:** Khi giao dịch ví điện tử bị tạm chặn do cảnh báo rủi ro, người dùng nhắn vào chat hỗ trợ gặp 2 nỗi đau lớn: (a) kịch bản tự động vòng vo không nhận diện được tình huống gấp thật (như đóng viện phí, thanh toán khẩn), và (b) không phát hiện/cảnh báo kịp kịch bản bị thao túng chuyển tiền (kể cả khi người dùng tự xác thực khuôn mặt), trong khi ngoài giờ trực 8h–20h không có tư vấn viên xử lý ngay.
+- **Mình đúng nếu thấy:** (1) Trong mẫu review công khai Google Play/App Store của ví điện tử & app ngân hàng, tỉ lệ phàn nàn về chặn/giữ giao dịch & hỗ trợ chậm/vòng vo xuất hiện lặp lại rõ rệt (đếm `x/N` và `%`, ≥5 trích dẫn nguyên văn đã ẩn tên); và (2) Trong khảo sát ≥20 người dùng ví ngoài nhóm + phỏng vấn ≥3 người, phần đông xác nhận từng bối rối/lo lắng khi giao dịch bị treo hoặc từng gặp tình huống bị giục chuyển tiền gấp.
