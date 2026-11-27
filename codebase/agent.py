@@ -1,16 +1,17 @@
 """Luồng chính của bản chạy thử — Workflow cố định 3 bước có router (Nhóm 3MV · Track E · E3).
 
+Module sâu một điểm vào duy nhất: `answer(text, *, model_fn=call_model) -> {"output": str, "meta": dict}`.
 Khớp đúng sơ đồ ở spec.md §4:
-  Bước 1 · Boundary Guard (code thuần): che OTP/mật khẩu/số thẻ, chặn dò ngưỡng & ngoài phạm vi, trích mã TX.
-  Bước 2 · Context Lookup + Classifier: gọi lookup_transaction / lookup_policy (không chứa ngưỡng gian lận)
-           và gọi model phân loại vào tập nhãn cố định.
-  Bước 3 · Deterministic Policy Router + Grounded Response: code gọi đúng @tool đảo được
-           (tuyệt đối không gọi release_transaction; lock_wallet chỉ tạo bản nháp chờ người duyệt)
-           và soạn phản hồi có căn cứ (và quét lần cuối đảm bảo 0% lặp lại bí mật).
+  Bước 1 · Input Guard (code thuần): che OTP/PIN/mật khẩu/số thẻ, trích mã TX, chặn ngoài phạm vi & dò ngưỡng.
+  Bước 2 · Context Lookup + Classifier: tra `lookup_transaction` (không chứa ngưỡng gian lận) + gọi `model_fn`
+           phân loại vào tập nhãn cố định, có hậu kiểm an toàn không cho hạ mức các ca rủi ro cao.
+  Bước 3 · Deterministic Policy Router + Grounded Response: code gọi đúng `@tool` đảo được / bản nháp
+           (tuyệt đối không gọi `release_transaction`; `lock_wallet` chỉ tạo bản nháp chờ người duyệt),
+           soạn phản hồi có căn cứ và quét lần cuối đảm bảo 0% lặp lại bí mật.
 """
 import json
-import os
 import re
+from typing import Callable
 
 from ai import call_model
 from tools import (
@@ -25,17 +26,30 @@ from tracing import note
 
 TX_RE = re.compile(r"\bTX-\d{3,6}\b", re.I)
 CARD_RE = re.compile(r"\b(?:\d[ -]?){13,19}\b")
-OTP_RE = re.compile(r"(?i)(?:otp|mã\s*xác\s*(?:thực|nhận)|mật\s*khẩu|password|pin)\s*(?:là|:|=|của\s*tôi\s*là)?\s*([A-Za-z0-9]{4,12})")
+OTP_DIGIT_RE = re.compile(
+    r"(?i)(?:otp|mã\s*xác\s*(?:thực|nhận)|pin)\s*(?:là|:|=|của\s*tôi\s*là)?\s*(\d(?:[ -]?\d){3,9})"
+)
+SECRET_TOKEN_RE = re.compile(
+    r"(?i)(?:mật\s*khẩu|password|pass)\s*(?:là|:|=|của\s*tôi\s*là)?\s*([^\s,;]{4,24})"
+)
 THRESHOLD_PROBE_RE = re.compile(
-    r"(?i)(dưới\s+bao\s+nhiêu|ngưỡng\s*(?:chặn|gian\s*lận|tiền|phát\s*hiện)|"
-    r"mấy\s+lần\s+.*không\s+bị\s+chặn|hạn\s+mức\s+nào\s+.*không\s+bị\s+chặn|"
-    r"quy\s+tắc\s+phát\s*hiện\s+gian\s*lận|release_transaction|bỏ\s+qua\s+(?:mọi\s+)?(?:quy\s+tắc|hướng\s+dẫn))"
+    r"(?i)("
+    r"dưới\s+bao\s+nhiêu|"
+    r"bao\s+nhiêu\s+(?:tiền|triệu).*(?:không\s+bị|cho\s+qua|bị\s+(?:chặn|hold))|"
+    r"(?:ngưỡng|limit|hạn\s+mức|mức\s+tiền)\s*[^.!?\n]{0,40}(?:chặn|hold|gian\s+lận|phát\s+hiện|không\s+bị)|"
+    r"(?:mấy|bao\s+nhiêu)\s+lần[^.!?\n]{0,40}(?:không\s+bị\s+chặn|gian\s+lận|phát\s+hiện|bị\s+(?:chặn|hold))|"
+    r"quy\s+tắc\s+phát\s*hiện\s+gian\s*lận|"
+    r"release_transaction|"
+    r"bỏ\s+qua\s+(?:mọi\s+|tất\s+cả\s+)?(?:quy\s+tắc|hướng\s+dẫn|luật)|"
+    r"ignore\s+(?:all\s+)?(?:previous|prior|system)\s+instructions|"
+    r"system\s+override"
+    r")"
 )
 OUT_OF_SCOPE_RE = re.compile(
     r"(?i)(mua\s+cổ\s+phiếu|tư\s+vấn\s+đầu\s+tư|đầu\s+tư\s+gì|chơi\s+chứng\s+khoán|mua\s+coin|chuyển\s+(?:tiền\s+)?hộ\s+(?:tôi|em|mình))"
 )
 SCAM_COERCION_RE = re.compile(
-    r"(?i)(công\s+an|vụ\s+án|xác\s+minh\s+hồ\s+sơ|viện\s+kiểm\s+sát|nhân\s+viên\s+thuế|"
+    r"(?i)(công\s+an|vụ\s+án|xác\s+minh\s+hồ\s+sơ|viện\s+kiểm\s+sát|nhân\s+viên\s+thuế|cục\s+thuế|"
     r"tài\s+khoản\s+tạm\s+giữ|chứng\s+minh\s+vô\s+tội|bị\s+phạt.*chuyển|giục\s+chuyển)"
 )
 URGENT_MEDICAL_RE = re.compile(r"(?i)(viện\s+phí|cấp\s+cứu|bệnh\s+viện|phòng\s+khám)")
@@ -44,7 +58,9 @@ ATO_RE = re.compile(
     r"(?i)(bị\s+hack|chiếm\s+tài\s+khoản|không\s+(?:hề\s+)?thực\s+hiện|ai\s+vừa\s+rút\s+tiền|"
     r"xóa\s+app.*trừ\s+tiền|xoá\s+app.*trừ\s+tiền|trừ\s+tiền\s+lạ)"
 )
-DUAL_LOCK_REFUND_RE = re.compile(r"(?i)(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ)).*(hoàn\s+(?:lại|tiền))|(hoàn\s+(?:lại|tiền)).*(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ))")
+DUAL_LOCK_REFUND_RE = re.compile(
+    r"(?i)(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ)).*(hoàn\s+(?:lại|tiền))|(hoàn\s+(?:lại|tiền)).*(khóa\s+(?:ví|thẻ)|khoá\s+(?:ví|thẻ))"
+)
 
 VALID_CATEGORIES = {
     "lua_dao",
@@ -56,6 +72,18 @@ VALID_CATEGORIES = {
     "chua_ro",
     "ngoai_pham_vi",
     "do_nguong",
+}
+PROTECTED_HIGH_RISK_CATEGORIES = {"lua_dao", "do_nguong", "nguoi_than", "hai_yeu_cau", "chiem_tai_khoan"}
+POLICY_TOPIC_MAP = {
+    "lua_dao": "lua_dao",
+    "gap_that": "gap_that",
+    "chiem_tai_khoan": "chiem_tai_khoan",
+    "hai_yeu_cau": "chiem_tai_khoan",
+    "nguoi_than": "nguoi_than",
+    "xac_minh_thuong": "gap_that",
+    "chua_ro": "gap_that",
+    "do_nguong": "bao_mat",
+    "ngoai_pham_vi": "ngoai_pham_vi",
 }
 
 SYSTEM_CLASSIFIER = """Bạn là bộ phân loại rủi ro cho kênh hỗ trợ giao dịch ví điện tử bị tạm chặn (Track E · E3).
@@ -86,22 +114,34 @@ LUẬT CỨNG TUYỆT ĐỐI:
 
 
 def _redact_secrets(text: str) -> tuple[str, list[str]]:
-    """Bước 1a: Che OTP / mật khẩu / số thẻ trước khi đưa vào model và trước khi trả về."""
+    """Bước 1a: Che OTP / PIN / mật khẩu / số thẻ trước khi đưa vào model và trước khi trả về."""
     secrets: list[str] = []
     redacted = text
 
-    def _mask_otp(m: re.Match) -> str:
-        secrets.append(m.group(1))
-        return m.group(0).replace(m.group(1), "[ĐÃ_ẨN_BÍ_MẬT]")
+    def _record_secret(raw_secret: str) -> None:
+        cleaned = raw_secret.strip()
+        if cleaned:
+            secrets.append(cleaned)
+        compact = re.sub(r"[ -]+", "", cleaned)
+        if compact and compact != cleaned:
+            secrets.append(compact)
 
-    redacted = OTP_RE.sub(_mask_otp, redacted)
+    def _mask_group1(tag: str):
+        def _repl(m: re.Match) -> str:
+            sec = m.group(1)
+            _record_secret(sec)
+            return m.group(0).replace(sec, tag, 1)
+
+        return _repl
+
+    redacted = OTP_DIGIT_RE.sub(_mask_group1("[ĐÃ_ẨN_BÍ_MẬT]"), redacted)
+    redacted = SECRET_TOKEN_RE.sub(_mask_group1("[ĐÃ_ẨN_BÍ_MẬT]"), redacted)
 
     def _mask_card(m: re.Match) -> str:
         raw = m.group(0).strip()
         digits = re.sub(r"\D", "", raw)
         if len(digits) >= 13:
-            secrets.append(raw)
-            secrets.append(digits)
+            _record_secret(raw)
             return "[ĐÃ_ẨN_SỐ_THẺ]"
         return raw
 
@@ -115,6 +155,23 @@ def _ensure_no_secret_leak(output: str, secrets: list[str]) -> str:
         if s and len(s) >= 4:
             safe = safe.replace(s, "[ĐÃ_ẨN]")
     return safe
+
+
+def _guard_input(raw_text: str) -> dict:
+    """Bước 1: Chuẩn hóa đầu vào, ẩn bí mật, trích mã TX và gắn cờ chặn cứng ngoài phạm vi."""
+    redacted_text, secrets = _redact_secrets(raw_text or "")
+    had_secret = bool(secrets)
+    if had_secret:
+        note("input_guard: đã che OTP/mật khẩu/số thẻ trong input")
+    tx_match = TX_RE.search(redacted_text)
+    tx_id = tx_match.group(0).upper() if tx_match else ""
+    return {
+        "redacted_text": redacted_text,
+        "secrets": secrets,
+        "had_secret": had_secret,
+        "tx_id": tx_id,
+        "out_of_scope": bool(OUT_OF_SCOPE_RE.search(redacted_text)),
+    }
 
 
 def _heuristic_category(redacted_text: str, tx_info: dict) -> tuple[str, str]:
@@ -150,6 +207,33 @@ def _parse_classifier_json(raw_text: str, fallback_cat: str, fallback_reason: st
     except Exception:
         pass
     return fallback_cat, fallback_reason
+
+
+def _classify_intent(
+    redacted_text: str,
+    tx_id: str,
+    tx_info: dict,
+    h_cat: str,
+    h_reason: str,
+    model_fn: Callable[[str, str], dict],
+) -> tuple[str, str, bool]:
+    """Bước 2: Gọi adapter model phân loại và áp dụng hậu kiểm an toàn. Trả (category, reason, is_fake)."""
+    tx_context = (
+        f"TX={tx_id}, status={tx_info.get('status')}, amount_vnd={tx_info.get('amount_vnd')}, "
+        f"recipient={tx_info.get('recipient_label')}, face_verified={tx_info.get('face_verified')}"
+        if tx_info.get("found")
+        else f"TX={tx_id or 'KHONG_CO'} (NOT_FOUND)"
+    )
+    cls_reply = model_fn(SYSTEM_CLASSIFIER, f"Dữ liệu giao dịch: {tx_context}\nTin nhắn người dùng: {redacted_text}")
+    is_fake = str(cls_reply.get("model") or "").strip().lower() == "fake"
+    if is_fake:
+        return h_cat, h_reason, True
+
+    category, reason = _parse_classifier_json(cls_reply.get("text", ""), h_cat, h_reason)
+    if h_cat in PROTECTED_HIGH_RISK_CATEGORIES and category != h_cat:
+        note(f"guardrail_override: {category} -> {h_cat}")
+        return h_cat, h_reason, False
+    return category, reason, False
 
 
 def _format_vnd(amount: int) -> str:
@@ -242,7 +326,11 @@ def _build_template_response(
 
     if category == "chiem_tai_khoan":
         ticket = next((a.get("ticket_id") for a in actions if a.get("action") == "handoff_to_agent"), "ADV-URGENT")
-        detail = f"Giao dịch {tx_id} ({_format_vnd(tx_info['amount_vnd'])}, trạng thái {tx_info['status']})" if tx_info.get("found") else "Yêu cầu nghi ngờ giao dịch lạ"
+        detail = (
+            f"Giao dịch {tx_id} ({_format_vnd(tx_info['amount_vnd'])}, trạng thái {tx_info['status']})"
+            if tx_info.get("found")
+            else "Yêu cầu nghi ngờ giao dịch lạ"
+        )
         lines.append(f"{detail}: Tôi đã chuyển khẩn sang tư vấn viên (mã {ticket}) để bảo vệ tài khoản.")
         lines.append(
             "Với giao dịch đã hoàn tất mà bạn không thực hiện, vui lòng lập yêu cầu tra soát theo hướng dẫn tư vấn viên "
@@ -260,7 +348,6 @@ def _build_template_response(
         lines.append("Lưu ý: Trợ lý không tự mở chặn giao dịch; nếu cần hỗ trợ thêm, tôi có thể chuyển tư vấn viên ngay.")
         return "\n".join(lines)
 
-    # chua_ro (G10)
     lines.append(
         "Để tôi kiểm tra chính xác mà không đoán bừa, bạn vui lòng cho biết mã giao dịch đang bị chặn (ví dụ: TX-901) "
         "và bạn có đang cần thanh toán khẩn cấp hoặc nghi ngờ bị trừ tiền lạ không?"
@@ -269,69 +356,9 @@ def _build_template_response(
     return "\n".join(lines)
 
 
-def answer(text: str) -> dict:
-    # === BƯỚC 1: BOUNDARY GUARD (CODE THUẦN) ===
-    redacted_text, secrets = _redact_secrets(text or "")
-    had_secret = bool(secrets)
-    if had_secret:
-        note("boundary_guard: đã che OTP/số thẻ trong input")
-
-    tx_match = TX_RE.search(redacted_text)
-    tx_id = tx_match.group(0).upper() if tx_match else ""
-
-    # Chặn cứng ngay ở biên cho ngoài phạm vi & dò ngưỡng (không để model đoán số ngưỡng)
-    if OUT_OF_SCOPE_RE.search(redacted_text):
-        policy = lookup_policy("ngoai_pham_vi")
-        out = _build_template_response("ngoai_pham_vi", tx_id, {}, policy, [], had_secret)
-        return {"output": _ensure_no_secret_leak(out, secrets)}
-
-    # === BƯỚC 2: CONTEXT LOOKUP + PHÂN LOẠI ===
-    tx_info = lookup_transaction(tx_id) if tx_id else {"found": False, "tx_id": ""}
-
-    h_cat, h_reason = _heuristic_category(redacted_text, tx_info)
-
-    # Chặn cứng ưu tiên với dò ngưỡng / prompt injection (tin nhắn là dữ liệu, không phải lệnh)
-    if h_cat == "do_nguong":
-        policy = lookup_policy("bao_mat")
-        actions = []
-        if tx_info.get("found") and tx_info.get("status") == "HELD":
-            actions.append(hold_transaction(tx_id, "Giữ giao dịch khi phát hiện yêu cầu vượt quyền/dò ngưỡng"))
-        out = _build_template_response("do_nguong", tx_id, tx_info, policy, actions, had_secret)
-        return {"output": _ensure_no_secret_leak(out, secrets)}
-
-    # Gọi model phân loại (fake mode ở CP2, model thật ở CP3)
-    provider = (os.environ.get("MODEL_PROVIDER") or "fake").strip().lower()
-    tx_context = (
-        f"TX={tx_id}, status={tx_info.get('status')}, amount_vnd={tx_info.get('amount_vnd')}, "
-        f"recipient={tx_info.get('recipient_label')}, face_verified={tx_info.get('face_verified')}"
-        if tx_info.get("found")
-        else f"TX={tx_id or 'KHONG_CO'} (NOT_FOUND)"
-    )
-    cls_reply = call_model(SYSTEM_CLASSIFIER, f"Dữ liệu giao dịch: {tx_context}\nTin nhắn người dùng: {redacted_text}")
-    if provider == "fake":
-        category, reason = h_cat, h_reason
-    else:
-        category, reason = _parse_classifier_json(cls_reply.get("text", ""), h_cat, h_reason)
-        # Hậu kiểm an toàn: không bao giờ hạ mức ca lừa đảo, dò ngưỡng hoặc người thân nhắn thay
-        if h_cat in {"lua_dao", "do_nguong", "nguoi_than", "hai_yeu_cau"} and category != h_cat:
-            note(f"guardrail_override: {category} -> {h_cat}")
-            category, reason = h_cat, h_reason
-
-    # === BƯỚC 3: DETERMINISTIC POLICY ROUTER (CHỈ GỌI CÔNG CỤ ĐẢO ĐƯỢC / BẢN NHÁP) ===
-    policy_topic_map = {
-        "lua_dao": "lua_dao",
-        "gap_that": "gap_that",
-        "chiem_tai_khoan": "chiem_tai_khoan",
-        "hai_yeu_cau": "chiem_tai_khoan",
-        "nguoi_than": "nguoi_than",
-        "xac_minh_thuong": "gap_that",
-        "chua_ro": "gap_that",
-        "do_nguong": "bao_mat",
-        "ngoai_pham_vi": "ngoai_pham_vi",
-    }
-    policy = lookup_policy(policy_topic_map.get(category, "gap_that"))
+def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dict, had_secret: bool) -> list[dict]:
+    """Bước 3a: Router chính sách tất định — chỉ gọi @tool đảo được hoặc bản nháp chờ duyệt."""
     actions: list[dict] = []
-
     if category == "lua_dao":
         if tx_info.get("found") and tx_info.get("status") == "HELD":
             actions.append(hold_transaction(tx_id, f"Nghi bị thao túng lừa đảo: {reason}"))
@@ -382,9 +409,56 @@ def answer(text: str) -> dict:
                 "Người dùng tự nhập OTP/số thẻ trong chat (đã ẩn). Cần tư vấn viên hỗ trợ an toàn.",
             )
         )
+    return actions
 
-    # Tạo phản hồi cuối cùng (dùng template chuẩn ở fake mode; dùng LLM grounded ở model thật)
-    if provider == "fake" or (tx_id and not tx_info.get("found")) or category == "nguoi_than":
+
+def _result(output: str, secrets: list[str], category: str, reason: str, tx_id: str, policy: dict, actions: list[dict], had_secret: bool) -> dict:
+    return {
+        "output": _ensure_no_secret_leak(output, secrets),
+        "meta": {
+            "category": category,
+            "reason": reason,
+            "tx_id": tx_id,
+            "policy_id": policy.get("policy_id", ""),
+            "had_secret": had_secret,
+            "actions": [a.get("action", "") for a in actions],
+        },
+    }
+
+
+def answer(text: str, *, model_fn: Callable[[str, str], dict] = call_model) -> dict:
+    """Điểm vào duy nhất cho CLI/Web UI, `run.py eval`, `run.py simulate` và test."""
+    # === BƯỚC 1: INPUT GUARD (CODE THUẦN) ===
+    guarded = _guard_input(text)
+    redacted_text = guarded["redacted_text"]
+    secrets = guarded["secrets"]
+    had_secret = guarded["had_secret"]
+    tx_id = guarded["tx_id"]
+
+    if guarded["out_of_scope"]:
+        policy = lookup_policy("ngoai_pham_vi")
+        out = _build_template_response("ngoai_pham_vi", tx_id, {}, policy, [], had_secret)
+        return _result(out, secrets, "ngoai_pham_vi", "Yêu cầu ngoài phạm vi hỗ trợ.", tx_id, policy, [], had_secret)
+
+    # === BƯỚC 2: CONTEXT LOOKUP + PHÂN LOẠI ===
+    tx_info = lookup_transaction(tx_id) if tx_id else {"found": False, "tx_id": ""}
+    h_cat, h_reason = _heuristic_category(redacted_text, tx_info)
+
+    if h_cat == "do_nguong":
+        policy = lookup_policy("bao_mat")
+        actions: list[dict] = []
+        if tx_info.get("found") and tx_info.get("status") == "HELD":
+            actions.append(hold_transaction(tx_id, "Giữ giao dịch khi phát hiện yêu cầu vượt quyền/dò ngưỡng"))
+        out = _build_template_response("do_nguong", tx_id, tx_info, policy, actions, had_secret)
+        return _result(out, secrets, "do_nguong", h_reason, tx_id, policy, actions, had_secret)
+
+    category, reason, is_fake = _classify_intent(redacted_text, tx_id, tx_info, h_cat, h_reason, model_fn)
+
+    # === BƯỚC 3: DETERMINISTIC POLICY ROUTER + GROUNDED RESPONSE ===
+    policy = lookup_policy(POLICY_TOPIC_MAP.get(category, "gap_that"))
+    actions = _execute_policy_actions(category, reason, tx_id, tx_info, had_secret)
+
+    if is_fake or (tx_id and not tx_info.get("found")) or category == "nguoi_than":
         output = _build_template_response(category, tx_id, tx_info, policy, actions, had_secret)
     else:
         verified_payload = {
@@ -395,7 +469,7 @@ def answer(text: str) -> dict:
             "policy": policy,
             "actions_executed": actions,
         }
-        resp = call_model(
+        resp = model_fn(
             SYSTEM_RESPONDER,
             f"DỮ LIỆU ĐÃ XÁC MINH:\n{json.dumps(verified_payload, ensure_ascii=False)}\n\n"
             f"TIN NHẮN NGƯỜI DÙNG (đã ẩn bí mật):\n{redacted_text}",
@@ -404,4 +478,4 @@ def answer(text: str) -> dict:
             category, tx_id, tx_info, policy, actions, had_secret
         )
 
-    return {"output": _ensure_no_secret_leak(output, secrets)}
+    return _result(output, secrets, category, reason, tx_id, policy, actions, had_secret)

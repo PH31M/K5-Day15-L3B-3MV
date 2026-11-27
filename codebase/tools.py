@@ -6,6 +6,7 @@ Khớp 1-1 với bảng công cụ ở spec.md §4.
 - Công cụ không đảo được (release_transaction) bị CHẶN CỨNG ở tầng code.
 - Công cụ khó đảo (lock_wallet) CHỈ tạo bản nháp chờ tư vấn viên xác nhận.
 """
+import functools
 import json
 import os
 from datetime import datetime, timezone
@@ -17,9 +18,14 @@ TX_PATH = os.path.join(ROOT, "data", "held_transactions.json")
 POLICY_PATH = os.path.join(ROOT, "data", "support_policies.json")
 
 
-def _load_json(path: str) -> dict:
+@functools.lru_cache(maxsize=8)
+def _load_json_cached(path: str, mtime_ns: int) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def _load_json(path: str) -> dict:
+    return _load_json_cached(path, os.stat(path).st_mtime_ns)
 
 
 @tool

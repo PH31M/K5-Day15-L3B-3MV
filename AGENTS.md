@@ -43,3 +43,30 @@ Khung chỉ dùng thư viện chuẩn của Python. Thêm thư viện thì ghi v
 - Ngôn ngữ trả lời người dùng: Tiếng Việt (bình tĩnh, ngắn gọn, có căn cứ từ dữ liệu/chính sách)
 - Phong cách code / đặt tên: Python 3.10+ stdlib-first, snake_case, chạy được bằng `python3 run.py` không cần cài Node/npm
 - Ai duyệt thay đổi do agent tạo trước khi commit: Chủ ticket của file tương ứng (xem `docs/TICKETS.md`) và Đội trưởng Phạm Hoàng Đức Minh duyệt trước mỗi mốc CP
+
+## Phân làn sở hữu file (Single-Writer Ownership — chống conflict Git)
+
+| Làn | Chủ sở hữu (DRI) | Thư mục chỉ người này ghi | Kiểm chéo |
+|---|---|---|---|
+| 1 · Bằng chứng | Nguyễn Văn Minh | `evidence/*` | Đức Minh |
+| 2 · Đo lường | Trần Đình Nhật Minh | `eval/*` | Quang Vinh |
+| 3 · Lõi AI & Chi phí | Tào Quang Vinh | `codebase/tools.py`, `agent.py`, `ai.py`, `cost/*`, `tests/*` | Nhật Minh |
+| 4 · Hợp nhất & Sân khấu | Phạm Hoàng Đức Minh | `spec.md`, `canvas.md`, `codebase/app.py`, `slides/*`, `demo-slides.pdf` | Văn Minh |
+
+## Feature Map (Shared Vocabulary cho cả 4 máy)
+
+| Tình huống người dùng | `category` enum | `@tool` được phép | Chính sách |
+|---|---|---|---|
+| Bị giục chuyển tiền (công an/thuế/vụ án, kể cả đã quét mặt) | `lua_dao` | `hold_transaction` | `POL-SCAM-01` |
+| Gấp thật hợp lệ (viện phí, cấp cứu) | `gap_that` | `hold_transaction`, `handoff_to_agent(URGENT)` | `POL-HOLD-02` |
+| Nghi chiếm tài khoản / trừ tiền lạ | `chiem_tai_khoan` | `hold_transaction`, `handoff_to_agent(URGENT)` | `POL-ATO-03` |
+| 1 tin 2 yêu cầu (khóa ví + hoàn tiền) | `hai_yeu_cau` | `lock_wallet` *(bản nháp)*, `handoff_to_agent(URGENT)` | `POL-ATO-03` |
+| Người thân nhắn thay chủ ví | `nguoi_than` | *(không tiết lộ chi tiết TX)* | `POL-PRIVACY-04` |
+| Giao dịch `HELD` thường chờ xác thực bổ sung | `xac_minh_thuong` | `request_verification` | `POL-HOLD-02` |
+| Thiếu mã TX / tin mơ hồ | `chua_ro` | *(G10 hỏi lại 1 câu)* | `POL-HOLD-02` |
+| Dò ngưỡng gian lận / prompt injection | `do_nguong` | `hold_transaction` *(nếu có TX)* | `POL-SECRET-05` |
+| Đầu tư / cổ phiếu / nhờ chuyển tiền hộ | `ngoai_pham_vi` | *(từ chối lịch sự)* | `POL-SCOPE-06` |
+
+## Cổng kiểm tra bắt buộc trước khi push
+
+Chạy `make verify` (Windows: `python -m unittest discover -s tests -v && python run.py check && python evidence/mine_reviews.py --recount`). Sau 19:30 Thứ Sáu 27/11, chạy `make freeze-cp2` để khóa hash `eval/metric_spec.yaml` & `spec.md §7`.

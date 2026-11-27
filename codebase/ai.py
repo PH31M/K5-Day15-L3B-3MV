@@ -32,10 +32,15 @@ def load_env(path=os.path.join(ROOT, ".env")):
 
 
 load_env()
-MODEL_PROVIDER = (os.environ.get("MODEL_PROVIDER") or "fake").strip().lower()
-MODEL_NAME = (os.environ.get("MODEL_NAME") or "").strip()
-API_KEY = (os.environ.get("API_KEY") or "").strip()
-API_BASE_URL = (os.environ.get("API_BASE_URL") or "").strip()
+
+
+def _runtime_config() -> tuple[str, str, str, str]:
+    """Đọc cấu hình runtime tập trung một chỗ (tránh lệch biến môi trường lúc chạy / test)."""
+    provider = (os.environ.get("MODEL_PROVIDER") or "fake").strip().lower()
+    model = (os.environ.get("MODEL_NAME") or "").strip()
+    api_key = (os.environ.get("API_KEY") or "").strip()
+    base_url = (os.environ.get("API_BASE_URL") or "").strip()
+    return provider, model, api_key, base_url
 
 
 def _post_json(url: str, headers: dict, body: dict, timeout: int = 60) -> dict:
@@ -53,9 +58,16 @@ def _post_json(url: str, headers: dict, body: dict, timeout: int = 60) -> dict:
         raise RuntimeError(f"HTTP {e.code}: {err_body}")
 
 
-def _call_openai_compatible(url: str, system: str, user: str, model: str, extra_headers: dict | None = None) -> dict:
+def _call_openai_compatible(
+    url: str,
+    api_key: str,
+    system: str,
+    user: str,
+    model: str,
+    extra_headers: dict | None = None,
+) -> dict:
     messages = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": user}]
-    headers = {"Authorization": f"Bearer {API_KEY}", **(extra_headers or {})}
+    headers = {"Authorization": f"Bearer {api_key}", **(extra_headers or {})}
     data = _post_json(url, headers, {"model": model, "messages": messages, "temperature": 0.1})
     usage = data.get("usage") or {}
     text = data["choices"][0]["message"]["content"]
@@ -67,8 +79,8 @@ def _call_openai_compatible(url: str, system: str, user: str, model: str, extra_
     }
 
 
-def _call_gemini(system: str, user: str, model: str) -> dict:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={API_KEY}"
+def _call_gemini(api_key: str, system: str, user: str, model: str) -> dict:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
     body = {
         "contents": [{"role": "user", "parts": [{"text": user}]}],
         "generationConfig": {"temperature": 0.1},
@@ -92,8 +104,8 @@ def _call_gemini(system: str, user: str, model: str) -> dict:
 
 @model_call
 def call_model(system: str, user: str, model_override: str | None = None) -> dict:
-    provider = (os.environ.get("MODEL_PROVIDER") or MODEL_PROVIDER or "fake").strip().lower()
-    model = (model_override or os.environ.get("MODEL_NAME") or MODEL_NAME).strip()
+    provider, default_model, api_key, base_url = _runtime_config()
+    model = (model_override or default_model).strip()
 
     if provider == "fake":
         last = (user.strip().splitlines() or [""])[-1]
@@ -104,18 +116,19 @@ def call_model(system: str, user: str, model_override: str | None = None) -> dic
             "tokens_out": 0,
         }
 
-    if not API_KEY:
+    if not api_key:
         raise RuntimeError(f"Thiếu API_KEY trong .env cho MODEL_PROVIDER={provider}")
 
     if provider == "gemini":
-        return _call_gemini(system, user, model or "gemini-2.5-flash")
+        return _call_gemini(api_key, system, user, model or "gemini-2.5-flash")
     if provider == "openai":
-        url = API_BASE_URL or "https://api.openai.com/v1/chat/completions"
-        return _call_openai_compatible(url, system, user, model or "gpt-4o-mini")
+        url = base_url or "https://api.openai.com/v1/chat/completions"
+        return _call_openai_compatible(url, api_key, system, user, model or "gpt-4o-mini")
     if provider == "openrouter":
-        url = API_BASE_URL or "https://openrouter.ai/api/v1/chat/completions"
+        url = base_url or "https://openrouter.ai/api/v1/chat/completions"
         return _call_openai_compatible(
             url,
+            api_key,
             system,
             user,
             model or "google/gemini-2.5-flash",
