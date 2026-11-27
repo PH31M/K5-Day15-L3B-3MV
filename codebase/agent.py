@@ -26,11 +26,16 @@ from tracing import note
 
 TX_RE = re.compile(r"\bTX-\d{3,6}\b", re.I)
 CARD_RE = re.compile(r"\b(?:\d[ -]?){13,19}\b")
-OTP_DIGIT_RE = re.compile(
-    r"(?i)(?:otp|mã\s*xác\s*(?:thực|nhận)|pin)\s*(?:là|:|=|của\s*tôi\s*là)?\s*(\d(?:[ -]?\d){3,9})"
-)
+_OTP_WORD = r"(?:\botp\b|\bpin\b|mã\s*xác\s*(?:thực|nhận|minh))"
+_OTP_DIGITS = r"(?<!\d)(?<!TX-)(\d(?:[ -]?\d){3,9})"
+# Từ khoá đứng trước số, cho phép vài chữ chen giữa ("OTP em là 482910", "mã OTP là: 482910").
+OTP_DIGIT_RE = re.compile(rf"(?i){_OTP_WORD}[^\d.,!?;\n]{{0,25}}?{_OTP_DIGITS}")
+# Số đứng trước từ khoá ("482910 là otp của tôi").
+OTP_REVERSED_RE = re.compile(rf"(?i){_OTP_DIGITS}\s*(?:chính\s+)?là\s+(?:mã\s+)?{_OTP_WORD}")
+# Mật khẩu: phải có dấu nối (là / : / =) hoặc chuỗi chứa chữ số, để "không pass được" không bị coi là bí mật.
 SECRET_TOKEN_RE = re.compile(
-    r"(?i)(?:mật\s*khẩu|password|pass)\s*(?:là|:|=|của\s*tôi\s*là)?\s*([^\s,;]{4,24})"
+    r"(?i)(?:mật\s*khẩu|password|\bpass\b)(?:\s+(?:của|tôi|em|mình|anh|chị|ví))*\s*"
+    r"(?:(?:là|:|=)\s*([^\s,;]{4,24})|(?!TX-)((?=[^\s,;]*\d)[^\s,;]{4,24}))"
 )
 THRESHOLD_PROBE_RE = re.compile(
     r"(?i)("
@@ -38,6 +43,7 @@ THRESHOLD_PROBE_RE = re.compile(
     r"bao\s+nhiêu\s+(?:tiền|triệu).*(?:không\s+bị|cho\s+qua|bị\s+(?:chặn|hold))|"
     r"(?:ngưỡng|limit|hạn\s+mức|mức\s+tiền)\s*[^.!?\n]{0,40}(?:chặn|hold|gian\s+lận|phát\s+hiện|không\s+bị)|"
     r"(?:mấy|bao\s+nhiêu)\s+lần[^.!?\n]{0,40}(?:không\s+bị\s+chặn|gian\s+lận|phát\s+hiện|bị\s+(?:chặn|hold))|"
+    r"(?:bao\s+nhiêu|mấy\s+(?:triệu|lần))[^.!?\n]{0,40}\b(?:thì|để)\s+(?:mới\s+|sẽ\s+)?(?:không\s+|khỏi\s+|tránh\s+)?(?:bị\s+)?(?:chặn|hold|giữ)|"
     r"quy\s+tắc\s+phát\s*hiện\s+gian\s*lận|"
     r"release_transaction|"
     r"bỏ\s+qua\s+(?:mọi\s+|tất\s+cả\s+)?(?:quy\s+tắc|hướng\s+dẫn|luật)|"
@@ -50,10 +56,17 @@ OUT_OF_SCOPE_RE = re.compile(
 )
 SCAM_COERCION_RE = re.compile(
     r"(?i)(công\s+an|vụ\s+án|xác\s+minh\s+hồ\s+sơ|viện\s+kiểm\s+sát|nhân\s+viên\s+thuế|cục\s+thuế|"
-    r"tài\s+khoản\s+tạm\s+giữ|chứng\s+minh\s+vô\s+tội|bị\s+phạt.*chuyển|giục\s+chuyển)"
+    r"tài\s+khoản\s+tạm\s+giữ|chứng\s+minh\s+vô\s+tội|bị\s+phạt.*chuyển|giục\s+chuyển|"
+    r"(?:có\s+người|người\s+lạ|bên\s+kia|ai\s+đó)[^.!?\n]{0,30}?(?:giục|hối|ép|dọa|đe\s*dọa|yêu\s+cầu|bảo)"
+    r"[^.!?\n]{0,30}?(?:chuyển|nộp)|"
+    r"bị\s+(?:giục|hối|ép|dọa)[^.!?\n]{0,20}?(?:chuyển|nộp))"
 )
 URGENT_MEDICAL_RE = re.compile(r"(?i)(viện\s+phí|cấp\s+cứu|bệnh\s+viện|phòng\s+khám)")
-THIRD_PARTY_RE = re.compile(r"(?i)(vợ\s+chủ\s+ví|chồng\s+tôi\s+nhờ|nhắn\s+thay|nhắn\s+hộ|mẹ\s+em\s+nhờ|bố\s+em\s+nhờ)")
+THIRD_PARTY_RE = re.compile(
+    r"(?i)((?:con|vợ|chồng|bố|ba|mẹ|anh|chị|em|bạn|người\s+nhà|người\s+thân)\s+(?:của\s+)?chủ\s+(?:ví|tài\s+khoản)|"
+    r"không\s+phải\s+(?:là\s+)?chủ\s+(?:ví|tài\s+khoản)|"
+    r"(?:chồng|vợ)\s+(?:tôi|em|mình)\s+nhờ|nhắn\s+thay|nhắn\s+hộ|mẹ\s+em\s+nhờ|bố\s+em\s+nhờ)"
+)
 ATO_RE = re.compile(
     r"(?i)(bị\s+hack|chiếm\s+tài\s+khoản|không\s+(?:hề\s+)?thực\s+hiện|ai\s+vừa\s+rút\s+tiền|"
     r"xóa\s+app.*trừ\s+tiền|xoá\s+app.*trừ\s+tiền|trừ\s+tiền\s+lạ)"
@@ -126,16 +139,14 @@ def _redact_secrets(text: str) -> tuple[str, list[str]]:
         if compact and compact != cleaned:
             secrets.append(compact)
 
-    def _mask_group1(tag: str):
-        def _repl(m: re.Match) -> str:
-            sec = m.group(1)
-            _record_secret(sec)
-            return m.group(0).replace(sec, tag, 1)
+    def _mask_captured(m: re.Match) -> str:
+        group = m.lastindex or 1
+        _record_secret(m.group(group))
+        start, end = (pos - m.start(0) for pos in m.span(group))
+        return m.group(0)[:start] + "[ĐÃ_ẨN_BÍ_MẬT]" + m.group(0)[end:]
 
-        return _repl
-
-    redacted = OTP_DIGIT_RE.sub(_mask_group1("[ĐÃ_ẨN_BÍ_MẬT]"), redacted)
-    redacted = SECRET_TOKEN_RE.sub(_mask_group1("[ĐÃ_ẨN_BÍ_MẬT]"), redacted)
+    for pattern in (OTP_DIGIT_RE, OTP_REVERSED_RE, SECRET_TOKEN_RE):
+        redacted = pattern.sub(_mask_captured, redacted)
 
     def _mask_card(m: re.Match) -> str:
         raw = m.group(0).strip()
@@ -146,6 +157,10 @@ def _redact_secrets(text: str) -> tuple[str, list[str]]:
         return raw
 
     redacted = CARD_RE.sub(_mask_card, redacted)
+    # Cùng một bí mật lặp lại ở chỗ không kèm từ khoá cũng phải che trước khi đưa vào model.
+    for sec in sorted(secrets, key=len, reverse=True):
+        if len(sec) >= 4:
+            redacted = redacted.replace(sec, "[ĐÃ_ẨN_BÍ_MẬT]")
     return redacted, secrets
 
 
@@ -170,18 +185,18 @@ def _guard_input(raw_text: str) -> dict:
         "secrets": secrets,
         "had_secret": had_secret,
         "tx_id": tx_id,
-        "out_of_scope": bool(OUT_OF_SCOPE_RE.search(redacted_text)),
     }
 
 
 def _heuristic_category(redacted_text: str, tx_info: dict) -> tuple[str, str]:
     """Bộ phân loại tất định (dùng cho chế độ fake CP2 và làm hậu kiểm an toàn cho model thật)."""
+    # Dấu hiệu lừa đảo xét TRƯỚC: luật cứng §7(4) không được bị nhánh từ chối che mất.
+    if SCAM_COERCION_RE.search(redacted_text):
+        return "lua_dao", "Có dấu hiệu bị giục chuyển tiền (mạo danh cơ quan chức năng hoặc bị thúc ép)."
     if THRESHOLD_PROBE_RE.search(redacted_text):
         return "do_nguong", "Phát hiện yêu cầu dò ngưỡng gian lận hoặc chỉ dẫn vượt quyền."
     if OUT_OF_SCOPE_RE.search(redacted_text):
         return "ngoai_pham_vi", "Yêu cầu tư vấn đầu tư hoặc chuyển tiền thay nằm ngoài phạm vi."
-    if SCAM_COERCION_RE.search(redacted_text):
-        return "lua_dao", "Có dấu hiệu bị giục chuyển tiền theo kịch bản mạo danh cơ quan chức năng."
     if THIRD_PARTY_RE.search(redacted_text):
         return "nguoi_than", "Bên thứ ba nhắn thay chủ ví."
     if DUAL_LOCK_REFUND_RE.search(redacted_text):
@@ -262,7 +277,8 @@ def _build_template_response(
         )
         if tx_id and tx_info.get("found"):
             lines.append(f"Giao dịch {tx_id} vẫn đang được giữ an toàn (HELD) chờ tư vấn viên xác minh.")
-        lines.append(f"Kênh chính thức: {policy.get('official_channel', 'Tổng đài chính thức trên ứng dụng')}.")
+        # official_channel của POL-SECRET-05 là chỉ dẫn cho trợ lý, không in nguyên văn cho người dùng.
+        lines.append("Kênh chính thức: tổng đài in trên ứng dụng (1900-0000-MAU). Không chia sẻ OTP/mật khẩu cho bất kỳ ai.")
         return "\n".join(lines)
 
     if category == "ngoai_pham_vi":
@@ -279,32 +295,56 @@ def _build_template_response(
         )
         return "\n".join(lines)
 
-    if tx_id and not tx_info.get("found"):
-        lines.append(
-            f"Tôi không tìm thấy mã giao dịch {tx_id} trong hệ thống. "
-            "Bạn vui lòng kiểm tra lại đúng mã giao dịch (vd TX-901) trong mục Lịch sử giao dịch để tôi hỗ trợ chính xác."
-        )
-        return "\n".join(lines)
-
+    # Cảnh báo lừa đảo luôn hiện, kể cả khi mã giao dịch sai, thiếu hoặc đã hoàn tất.
     if category == "lua_dao":
+        held = tx_info.get("found") and tx_info.get("status") == "HELD"
+        if held:
+            state = f"Hệ thống tiếp tục GIỮ giao dịch {tx_id} để bảo vệ tiền của bạn"
+        elif tx_info.get("found"):
+            state = (
+                f"Giao dịch {tx_id} đang ở trạng thái {tx_info['status']} nên không còn giữ lại được; "
+                "hãy lập yêu cầu tra soát trong mục Lịch sử giao dịch"
+            )
+        elif tx_id:
+            state = f"Tôi không tìm thấy mã giao dịch {tx_id}, vui lòng kiểm tra lại trong mục Lịch sử giao dịch"
+        else:
+            state = "Bạn hãy gửi mã giao dịch (dạng TX-...) để tôi kiểm tra"
         lines.append(
-            f"CẢNH BÁO RỦI RO LỪA ĐẢO: Hệ thống tiếp tục GIỮ giao dịch {tx_id or '(đang treo)'} để bảo vệ tiền của bạn "
-            "(ngay cả khi bạn đã tự xác thực khuôn mặt, giao dịch bị thao túng vẫn không thể thu hồi nếu chuyển đi)."
+            f"CẢNH BÁO RỦI RO LỪA ĐẢO: {state} "
+            "(kể cả khi đã tự xác thực khuôn mặt, tiền chuyển do bị thao túng có thể không thu hồi được)."
         )
         lines.append(
             "Vui lòng DỪNG chuyển tiền và ngừng liên lạc với bên đang thúc giục. "
             f"{policy.get('rule_summary', '')}"
         )
-        lines.append(f"Kiểm tra qua kênh chính thức: {policy.get('official_channel', '1900-0000-MAU')}.")
+        lines.append(f"Kiểm tra qua kênh chính thức: {policy.get('official_channel', '1900-0000-MAU').rstrip('.')}.")
+        return "\n".join(lines)
+
+    if tx_id and not tx_info.get("found"):
+        lines.append(
+            f"Tôi không tìm thấy mã giao dịch {tx_id} trong hệ thống. "
+            "Bạn vui lòng kiểm tra lại đúng mã giao dịch (vd TX-901) trong mục Lịch sử giao dịch để tôi hỗ trợ chính xác."
+        )
+        ticket = next((a.get("ticket_id") for a in actions if a.get("action") == "handoff_to_agent"), "")
+        if ticket:
+            lines.append(f"Tôi đã chuyển tư vấn viên (mã {ticket}) để hỗ trợ bạn.")
         return "\n".join(lines)
 
     if category == "gap_that":
         ticket = next((a.get("ticket_id") for a in actions if a.get("action") == "handoff_to_agent"), "ADV-URGENT")
-        amt = _format_vnd(tx_info["amount_vnd"]) if tx_info.get("found") else "đang kiểm tra"
-        lines.append(
-            f"Tôi hiểu bạn đang cần thanh toán gấp. Giao dịch {tx_id} ({amt}) hiện đang được tạm giữ an toàn "
-            "và trợ lý ảo không có quyền tự mở chặn."
-        )
+        if not tx_info.get("found"):
+            state = "Bạn chưa gửi mã giao dịch (dạng TX-...); trợ lý ảo không có quyền tự mở chặn."
+        elif tx_info.get("status") == "HELD":
+            state = (
+                f"Giao dịch {tx_id} ({_format_vnd(tx_info['amount_vnd'])}) hiện đang được tạm giữ an toàn "
+                "và trợ lý ảo không có quyền tự mở chặn."
+            )
+        else:
+            state = (
+                f"Giao dịch {tx_id} ({_format_vnd(tx_info['amount_vnd'])}) đang ở trạng thái {tx_info['status']}, "
+                "không phải đang tạm giữ."
+            )
+        lines.append(f"Tôi hiểu bạn đang cần thanh toán gấp. {state}")
         lines.append(
             f"Tôi đã chuyển hồ sơ KHẨN CẤP (mã {ticket}) kèm tóm tắt cho tư vấn viên ưu tiên xử lý ngay. "
             "Nếu ngoài khung giờ 8h–20h, vui lòng gọi hotline khẩn 24/7: 1900-0000-MAU."
@@ -332,20 +372,33 @@ def _build_template_response(
             else "Yêu cầu nghi ngờ giao dịch lạ"
         )
         lines.append(f"{detail}: Tôi đã chuyển khẩn sang tư vấn viên (mã {ticket}) để bảo vệ tài khoản.")
+        if not tx_info.get("found"):
+            lines.append("Bạn gửi giúp mã giao dịch lạ (dạng TX-...) trong mục Lịch sử giao dịch.")
         lines.append(
             "Với giao dịch đã hoàn tất mà bạn không thực hiện, vui lòng lập yêu cầu tra soát theo hướng dẫn tư vấn viên "
             "(hệ thống không thể hứa chắc chắn hoàn tiền trước khi có kết quả tra soát). Tuyệt đối không chia sẻ OTP/mật khẩu."
         )
         return "\n".join(lines)
 
-    if category == "xac_minh_thuong":
-        ver = next((a.get("verification_ticket") for a in actions if a.get("action") == "request_verification"), "VER")
+    if category == "xac_minh_thuong" and tx_info.get("found") and tx_info.get("status") == "HELD":
+        ver =next((a.get("verification_ticket") for a in actions if a.get("action") == "request_verification"), "VER")
         amt = _format_vnd(tx_info["amount_vnd"])
         lines.append(
             f"Giao dịch {tx_id} ({amt} gửi tới {tx_info['recipient_label']}) đang tạm giữ để chờ bước xác thực bổ sung. "
             f"Tôi đã gửi màn hình xác thực ({ver}) vào ứng dụng — vui lòng tự thực hiện trên máy của bạn."
         )
         lines.append("Lưu ý: Trợ lý không tự mở chặn giao dịch; nếu cần hỗ trợ thêm, tôi có thể chuyển tư vấn viên ngay.")
+        return "\n".join(lines)
+
+    if tx_info.get("found"):
+        ticket = next((a.get("ticket_id") for a in actions if a.get("action") == "handoff_to_agent"), "")
+        lines.append(
+            f"Giao dịch {tx_id} đang ở trạng thái {tx_info['status']}. Trợ lý không tự mở chặn giao dịch."
+        )
+        if ticket:
+            lines.append(f"Tôi đã chuyển tư vấn viên (mã {ticket}) để hỗ trợ bạn an toàn.")
+        else:
+            lines.append("Bạn đang cần thanh toán gấp, đang bị ai thúc giục chuyển tiền, hay không nhận ra giao dịch này?")
         return "\n".join(lines)
 
     lines.append(
@@ -362,8 +415,6 @@ def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dic
     if category == "lua_dao":
         if tx_info.get("found") and tx_info.get("status") == "HELD":
             actions.append(hold_transaction(tx_id, f"Nghi bị thao túng lừa đảo: {reason}"))
-        elif tx_id:
-            actions.append(hold_transaction(tx_id, f"Giữ phòng ngừa nghi lừa đảo: {reason}"))
     elif category == "gap_that":
         if tx_info.get("found") and tx_info.get("status") == "HELD":
             actions.append(hold_transaction(tx_id, "Giữ an toàn trong khi chuyển tư vấn viên ưu tiên"))
@@ -397,7 +448,7 @@ def _execute_policy_actions(category: str, reason: str, tx_id: str, tx_info: dic
                 f"Nghi chiếm tài khoản / trừ tiền lạ ({reason}). Cần tư vấn viên xác minh & hướng dẫn tra soát.",
             )
         )
-    elif category == "xac_minh_thuong" and tx_info.get("found"):
+    elif category == "xac_minh_thuong" and tx_info.get("found") and tx_info.get("status") == "HELD":
         actions.append(request_verification(tx_id, tx_info.get("user_alias", "U-00")))
     elif had_secret and tx_info.get("found") and tx_info.get("status") == "HELD":
         actions.append(hold_transaction(tx_id, "Người dùng gửi OTP/số thẻ trong chat — giữ an toàn"))
@@ -435,14 +486,14 @@ def answer(text: str, *, model_fn: Callable[[str, str], dict] = call_model) -> d
     had_secret = guarded["had_secret"]
     tx_id = guarded["tx_id"]
 
-    if guarded["out_of_scope"]:
-        policy = lookup_policy("ngoai_pham_vi")
-        out = _build_template_response("ngoai_pham_vi", tx_id, {}, policy, [], had_secret)
-        return _result(out, secrets, "ngoai_pham_vi", "Yêu cầu ngoài phạm vi hỗ trợ.", tx_id, policy, [], had_secret)
-
     # === BƯỚC 2: CONTEXT LOOKUP + PHÂN LOẠI ===
     tx_info = lookup_transaction(tx_id) if tx_id else {"found": False, "tx_id": ""}
     h_cat, h_reason = _heuristic_category(redacted_text, tx_info)
+
+    if h_cat == "ngoai_pham_vi":
+        policy = lookup_policy("ngoai_pham_vi")
+        out = _build_template_response("ngoai_pham_vi", tx_id, {}, policy, [], had_secret)
+        return _result(out, secrets, "ngoai_pham_vi", h_reason, tx_id, policy, [], had_secret)
 
     if h_cat == "do_nguong":
         policy = lookup_policy("bao_mat")
@@ -458,7 +509,8 @@ def answer(text: str, *, model_fn: Callable[[str, str], dict] = call_model) -> d
     policy = lookup_policy(POLICY_TOPIC_MAP.get(category, "gap_that"))
     actions = _execute_policy_actions(category, reason, tx_id, tx_info, had_secret)
 
-    if is_fake or (tx_id and not tx_info.get("found")) or category == "nguoi_than":
+    # lua_dao dùng mẫu tất định: cảnh báo dừng + kênh chính thức không được phụ thuộc lời văn của model.
+    if is_fake or (tx_id and not tx_info.get("found")) or category in ("nguoi_than", "lua_dao"):
         output = _build_template_response(category, tx_id, tx_info, policy, actions, had_secret)
     else:
         verified_payload = {
