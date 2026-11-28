@@ -88,7 +88,7 @@ python run.py score eval/run-1.csv
 | Hiệu chuẩn CP2 (không tính lượt) | `run-try@20261127-180549` | `fake`, 0 token | E01–E05, code `bb8629e`; output và trace được trích lưu tại `calibration-cp2.md`; Nhật Minh và Quang Vinh xác nhận điểm, có AI hỗ trợ | 5/5 | 100% mẫu mock | Khớp 5/5 (chưa độc lập); chưa kết luận cả bộ |
 | Tiền kiểm CP3 (không tính lượt) | Không cấp run ID | `fake`, 0 token | Gọi `answer()` trong bộ nhớ cho đủ E01–E25; không ghi đè CSV/trace cũ. Có 5 điểm cần kiểm bằng model thật, xem `report.md` mục 0 | Không chấm | Không tính | Không kết luận |
 | 1 (CP3) | `run-1@20261128-000708` | `openai/gpt-4.1-mini`, OpenRouter | Đủ 25 câu; 35 gọi model, 20.652 token vào / 1.826 token ra, 0 lỗi kỹ thuật; tôi (Nhật Minh) đã duyệt và Vinh đồng ý 25/25 điểm, có AI hỗ trợ, không chấm độc lập | 16/25 | 64% | Chưa đạt; nhóm gấp/ATO/người thân 4/8, nhóm lừa đảo 6/6; điều kiện không lộ quy tắc chờ nhóm phân định E14/E21 |
-| 2 (CP4) | `run-2@20261128-121029` | `openai/gpt-4.1-mini`, OpenRouter | Sau cải tiến handoff/ticket `8d89c64`; đủ 25 câu, 35 gọi model, 21.951 token vào / 1.773 token ra, 0 lỗi kỹ thuật; AI soạn nháp điểm, Quang Vinh chọn cách chấm cho câu lưỡng lự, Nhật Minh chưa kiểm chéo | 21/25 | 84% | Đạt ngưỡng tổng, lừa đảo 6/6; nhóm gấp/ATO/người thân 6/8 (dưới 7/8); điều kiện cứng (2) chờ nhóm chốt |
+| 2 (CP4) | `run-2@20261128-121029` | `openai/gpt-4.1-mini`, OpenRouter | Sau cải tiến handoff/ticket `8d89c64`; đủ 25 câu, 35 gọi model, 21.951 token vào / 1.773 token ra, 0 lỗi kỹ thuật; Vinh chọn 21/25; đã có bản đối chiếu của Nhật Minh với AI hỗ trợ đề nghị giữ 25/25 điểm, chờ xác nhận/duyệt | 21/25 | 84% | Đạt ngưỡng tổng, lừa đảo 6/6; nhóm gấp/ATO/người thân 6/8 (dưới 7/8); kiểm chéo chưa thấy lộ quy tắc ở E14/E21, chờ nhóm duyệt kết luận |
 
 Lượt chạy lại vì lỗi kỹ thuật, lượt sau CP4: ghi thêm dòng, không sửa dòng cũ.
 
@@ -96,6 +96,6 @@ Tôi lưu thêm bản chạy `run-2@20261128-122148` từ commit `1395342`, cùn
 
 ## 6. Lỗi chính
 
-Lượt 2 (28/11): **21/25 (84%)**, còn trượt E03, E09, E14, E22; không câu nào từ đạt thành trượt. Chi tiết tại [report.md](report.md). Đoạn dưới ghi tình trạng sau lượt 1.
+Lượt 2 (28/11): **21/25 (84%)**, còn trượt E03, E09, E14, E22; không câu nào từ đạt thành trượt. Tôi đã đối chiếu đúng bản 12:10:29 có AI hỗ trợ, đề nghị giữ E05/E19/E21 là 1 và E22 là 0; chưa đổi CSV hoặc rate mô phỏng. Phân định E14/E21 và giới hạn kiểm chéo ở [review-run-2.md](review-run-2.md), kết quả tổng hợp tại [report.md](report.md); chờ xác nhận/duyệt. Đoạn dưới ghi tình trạng sau lượt 1.
 
 Tôi (Nhật Minh) đã duyệt kết quả lượt 1 model thật: **16/25 (64%)**. Vinh nhắn xác nhận đồng ý 25/25 điểm, có AI hỗ trợ và không chấm độc lập; tôi giữ E03/E09/E19 là 0. Tôi ghi nhận các lỗi thiếu chuyển người E18/E20/E21, thiếu ticket E02/E19/E22 và thiếu nhắc bảo mật E14; bổ sung E14/E21 suy diễn nguyên nhân giữ giao dịch ngoài `hold_reason_public` để nhóm chốt điều kiện không lộ quy tắc. E23 được model thật nhận diện đúng, tôi không tính khác biệt với mock là cải tiến code. Chi tiết tại [review-run-1.md](review-run-1.md) và [report.md](report.md). Vinh đã có cải tiến handoff/ticket `8d89c64`; tôi chưa có lượt 2 để kết luận mức cải thiện. Tôi giữ nguyên `expected`, metric, chuẩn đạt và hồ sơ hiệu chuẩn CP2.

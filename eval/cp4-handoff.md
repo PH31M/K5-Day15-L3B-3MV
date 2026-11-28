@@ -39,7 +39,7 @@ python run.py simulate --rate-from eval/run-2.csv
 ```
 
 - Kết quả đã có trong [simulate-1-summary.md](../cost/simulate-1-summary.md) và [cost-estimate.md](../cost/cost-estimate.md). Tôi không chạy lại hay ghi đè mô phỏng.
-- Tôi cần rà bản chấm main mà Vinh bàn giao, nhất là E05/E19/E21/E22, theo mục còn lại của `eval/report.md`. Phiếu bản 12:21:48 giữ riêng để không lấy lý do chấm của output khác áp vào bản main. Nếu nhóm đổi pass/ghi_chu, ghi rõ quyết định rồi cập nhật score/báo cáo và rate chi phí.
+- Tôi đã rà bản chấm main Vinh bàn giao và ghi [kiểm chéo bản 12:10:29](review-run-2.md): đề nghị giữ E05/E19/E21=1, E22=0, tổng 21/25. Chưa sửa CSV/rate; chờ xác nhận bản ghi và nhóm duyệt kết luận điều kiện cứng (2). Phiếu bản 12:21:48 giữ riêng để không trộn output. Nếu nhóm đổi điểm, ghi rõ quyết định rồi cập nhật score/báo cáo và rate chi phí.
 
 ## Gửi Đức Minh — slide và chốt CP4
 
