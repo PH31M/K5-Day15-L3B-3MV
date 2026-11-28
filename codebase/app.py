@@ -22,7 +22,7 @@ VN_TZ = timezone(timedelta(hours=7))
 
 def _now_vn() -> str:
     return datetime.now(VN_TZ).strftime("%H:%M:%S")
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 
 for _stream in (sys.stdout, sys.stderr, sys.stdin):
     try:
@@ -46,6 +46,7 @@ USD_TO_VND = 25687  # tỷ giá trung tâm NHNN 27/11/2026
 
 ADVISOR_QUEUE: dict[str, dict] = {}
 ADVISOR_LOCK = threading.Lock()
+CHAT_LOCK = threading.Lock()  # tracing.py giữ một trạng thái chung cho cả tiến trình
 _SEQ = 0
 
 
@@ -1337,6 +1338,8 @@ HTML_PAGE = """<!DOCTYPE html>
 # HTTP Handler cho Bàn Điều Phối Web UI
 # ---------------------------------------------------------------------------
 class AppServerHandler(BaseHTTPRequestHandler):
+    timeout = 30  # đóng kết nối mở sẵn mà không gửi gì
+
     def _send_json(self, code: int, obj: dict) -> None:
         raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
@@ -1405,15 +1408,20 @@ class AppServerHandler(BaseHTTPRequestHandler):
 
             redacted_user_msg, secrets = agent._redact_secrets(user_msg)
             t0 = time.perf_counter()
-            tracing.begin("web_app")
-            try:
-                result = agent.answer(user_msg)
-            except Exception as e:
-                tracing.end()
+            # Mỗi lúc chỉ một lượt được chạy, để trace của hai người không trộn vào nhau.
+            with CHAT_LOCK:
+                tracing.begin("web_app")
+                try:
+                    result, error = agent.answer(user_msg), None
+                except Exception as e:
+                    result, error = None, e
+                summary, events = tracing.end()
+
+            if error is not None:
                 res_payload = {
-                    "output": f"Lỗi xử lý luồng AI: {e}",
+                    "output": f"Lỗi xử lý luồng AI: {error}",
                     "redacted_user_message": redacted_user_msg,
-                    "meta": {"error": str(e), "had_secret": bool(secrets)},
+                    "meta": {"error": str(error), "had_secret": bool(secrets)},
                     "trace": {
                         "model": "error",
                         "tokens_in": 0,
@@ -1429,7 +1437,6 @@ class AppServerHandler(BaseHTTPRequestHandler):
                     "approvals": [],
                 }
             else:
-                summary, events = tracing.end()
                 latency_ms = round((time.perf_counter() - t0) * 1000)
                 meta = result.get("meta", {}) if isinstance(result, dict) else {}
                 out_text = result.get("output", "") if isinstance(result, dict) else str(result)
@@ -1499,6 +1506,11 @@ def _port_in_use(port: int) -> bool:
     return False
 
 
+def make_server(port: int) -> HTTPServer:
+    """Server của bàn điều phối, chỉ nghe trên máy này. Mỗi kết nối một luồng nên không ai chặn được người khác."""
+    return ThreadingHTTPServer(("127.0.0.1", port), AppServerHandler)
+
+
 def run_web(port: int = 8000) -> int:
     """Khởi động Web UI 3 cột trong trình duyệt."""
     # Windows cho phép hai chương trình cùng gắn một cổng, nên phải thử kết nối thay vì chờ OSError.
@@ -1508,7 +1520,7 @@ def run_web(port: int = 8000) -> int:
             continue
         try:
             # Chỉ nghe trên máy này: người cùng Wi-Fi không gọi được /api/chat bằng API key của nhóm.
-            httpd = HTTPServer(("127.0.0.1", candidate), AppServerHandler)
+            httpd = make_server(candidate)
         except OSError:
             continue
         port = candidate

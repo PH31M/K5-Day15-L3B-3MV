@@ -76,5 +76,50 @@ class TestAppChat(unittest.TestCase):
             self.assertTrue(app._port_in_use(taken.getsockname()[1]))
 
 
+class TestAppServerUnderTunnel(unittest.TestCase):
+    """Tunnel và trình duyệt mở sẵn kết nối rồi để trống; server không được treo vì thế."""
+
+    def setUp(self):
+        self.server = app.make_server(0)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.base = "http://127.0.0.1:%d" % self.server.server_port
+        self.idle = []
+
+    def tearDown(self):
+        for sock in self.idle:
+            sock.close()
+        self.server.shutdown()
+        self.server.server_close()
+
+    def test_idle_connections_do_not_block_other_requests(self):
+        for _ in range(6):
+            self.idle.append(socket.create_connection(("127.0.0.1", self.server.server_port), timeout=3))
+        with urllib.request.urlopen(self.base + "/healthz", timeout=3) as reply:
+            self.assertEqual(reply.status, 200)
+
+    def test_simultaneous_chats_keep_their_own_trace(self):
+        results = {}
+
+        def ask(tx):
+            request = urllib.request.Request(
+                self.base + "/api/chat",
+                data=json.dumps({"message": "Giao dịch %s của mình đang bị giữ" % tx}).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(request, timeout=10) as reply:
+                results[tx] = json.loads(reply.read().decode("utf-8"))
+
+        codes = ["TX-901", "TX-902", "TX-906", "TX-910", "TX-911", "TX-912"]
+        threads = [threading.Thread(target=ask, args=(tx,)) for tx in codes]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=15)
+        self.assertEqual(sorted(results), codes)
+        for tx, data in results.items():
+            self.assertEqual(data["tx"]["tx_id"], tx)
+            self.assertEqual(data["trace"]["tools"].count("lookup_transaction"), 1, tx)
+
+
 if __name__ == "__main__":
     unittest.main()
