@@ -111,3 +111,9 @@ Tôi bổ sung nhận xét của Vinh về E14/E21 suy diễn nguyên nhân gi�
 
 - Cần Nhật Minh kiểm chéo bản chấm lượt 2, nhất là E05, E19, E21, E22; chấm chặt cả bốn thì còn 18/25 (72%), dưới ngưỡng. Cần nhóm chốt điều kiện cứng (2) và Đức Minh duyệt. Giữ nguyên output/trace cả hai lượt.
 - Nếu có thêm 1 tuần: kiểm độ ổn định qua nhiều lượt độc lập và tình huống chuyển người do người dùng ngoài nhóm thử; đây là đề xuất, chưa thực hiện.
+
+## 5. Bản chạy bổ sung được giữ khi chuyển sang main
+
+Tôi có bản chạy `run-2@20261128-122148` tại commit `1395342`, cũng đạt 21/25 (84%), khác với bản `run-2@20261128-121029` dùng trong hồ sơ chính phía trên và mô phỏng `simulate-1`. Tôi giữ nguyên CSV/trace của bản main; bản bổ sung lưu riêng tại [run-2-20261128-122148.csv](run-2-20261128-122148.csv) và [trace cùng timestamp](../traces/run-2-20261128-122148.jsonl), giữ nguyên run ID trong dữ liệu.
+
+Phiếu chấm riêng: [review-run-2-20261128-122148.md](review-run-2-20261128-122148.md). Bản 12:21:48 có 35 gọi model, 68 gọi tool, 21.974 token vào / 1.743 token ra, 0 lỗi kỹ thuật. E22 ở bản này khẳng định "tiền chưa bị trừ", còn bản main nói "có thể hoàn tác"; tôi không trộn căn cứ của hai output. Tài liệu trình bày/bàn giao ở [cp4-handoff.md](cp4-handoff.md), reflection ở [tran-dinh-nhat-minh.md](../reflection/tran-dinh-nhat-minh.md). Các mục 1–4 tiếp tục dẫn bản main 12:10:29.

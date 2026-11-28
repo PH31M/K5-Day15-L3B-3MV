@@ -92,6 +92,8 @@ python run.py score eval/run-1.csv
 
 Lượt chạy lại vì lỗi kỹ thuật, lượt sau CP4: ghi thêm dòng, không sửa dòng cũ.
 
+Tôi lưu thêm bản chạy `run-2@20261128-122148` từ commit `1395342`, cùng 21/25 (84%) nhưng output khác bản main 12:10:29. Bằng chứng nằm trong [CSV theo timestamp](run-2-20261128-122148.csv), [trace](../traces/run-2-20261128-122148.jsonl) và [phiếu chấm riêng](review-run-2-20261128-122148.md). File `eval/run-2.csv` trong bảng trên và rate của mô phỏng tiếp tục là bản main 12:10:29; xem [bàn giao CP4](cp4-handoff.md) để phân biệt nguồn.
+
 ## 6. Lỗi chính
 
 Lượt 2 (28/11): **21/25 (84%)**, còn trượt E03, E09, E14, E22; không câu nào từ đạt thành trượt. Chi tiết tại [report.md](report.md). Đoạn dưới ghi tình trạng sau lượt 1.
