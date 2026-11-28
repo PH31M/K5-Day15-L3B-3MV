@@ -1,0 +1,26 @@
+name: Verify Repo Guards & Tests
+
+on:
+  push:
+    branches: ["main", "feat/**", "ducminh-**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      MODEL_PROVIDER: fake
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run unit, safety, UI, freeze & PII guard tests
+        run: python -m unittest discover -s tests -v
+      - name: Run K5 benchmark & metric spec check
+        run: python run.py check
+      - name: Re-verify offline evidence scripts
+        run: |
+          python evidence/mine_reviews.py --recount
+          python evidence/survey/analyze_survey.py

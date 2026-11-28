@@ -67,6 +67,17 @@ Khung chỉ dùng thư viện chuẩn của Python. Thêm thư viện thì ghi v
 | Dò ngưỡng gian lận / prompt injection | `do_nguong` | `hold_transaction` *(nếu có TX)* | `POL-SECRET-05` |
 | Đầu tư / cổ phiếu / nhờ chuyển tiền hộ | `ngoai_pham_vi` | *(từ chối lịch sự)* | `POL-SCOPE-06` |
 
+## Nguồn sự thật duy nhất (đọc đúng file này trước khi ghi số vào `slides/`, `spec.md`, `docs/`)
+
+| Khi cần ghi số về… | Đọc trực tiếp tại | Ghi chú |
+|---|---|---|
+| Số `category`, luật chặn & router | `codebase/agent.py` (`VALID_CATEGORIES`) | Không đếm nhẩm từ bản nháp cũ |
+| Số giao dịch giả lập & mã TX | `data/held_transactions.json` | Kiểm trạng thái `HELD` / `COMPLETED` |
+| Số bằng chứng đa nguồn (R1) | `evidence/summary.md` | Tách biệt `evidence/desk-research.md` (thứ cấp) |
+| Điểm Eval L1/L2 & cụm lỗi (R4–R5) | `eval/report.md` & `eval/run-*.csv` | Chỉ ghi số sau khi chạy `python run.py score` |
+| Giá model & chi phí thật (R6) | `cost/personas.yaml` & `cost/simulate-*-summary.md` | Chỉ dùng model còn hoạt động theo bảng giá BTC |
+| Số lượng unit test & cổng an toàn | `python -m unittest discover -s tests -v` | Gồm `test_agent_behavior`, `test_app_ui`, `test_repo_guards` |
+
 ## Cổng kiểm tra bắt buộc trước khi push
 
-Chạy `make verify` (Windows: `python -m unittest discover -s tests -v && python run.py check && python evidence/mine_reviews.py --recount`). Sau 19:30 Thứ Sáu 27/11, chạy `make freeze-cp2` để khóa hash `eval/metric_spec.yaml` & `spec.md §7`.
+Chạy `make verify` (Windows: `python -m unittest discover -s tests -v && python run.py check && python evidence/mine_reviews.py --recount && python evidence/survey/analyze_survey.py`). Sau 19:30 Thứ Sáu 27/11, giữ nguyên `eval/.cp2_lock.json` để khoá hash `eval/metric_spec.yaml` & `spec.md §7`. Mọi push/PR lên GitHub đều chạy tự động qua `.github/workflows/verify.yml`.
