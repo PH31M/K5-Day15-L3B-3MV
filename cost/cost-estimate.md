@@ -25,7 +25,7 @@ Câu 6 đếm số lần gặp giao dịch bất thường hoặc tin nhắn ngh
 | `gemini-3.1-flash-lite` (tầng nhỏ) | 0,25 | 1,50 | [Giá Gemini API](https://ai.google.dev/gemini-api/docs/pricing) và OpenRouter |
 | `gemini-4-hydrogen` (tầng lớn) | 1,50 | 7,50 | [Giá Gemini API](https://ai.google.dev/gemini-api/docs/pricing) và OpenRouter |
 
-- **Tỉ lệ đạt:** 21/25 (84%), lượt `run-2@20261128-121029`. Nhật Minh chưa kiểm chéo lượt này; chấm chặt 4 câu lưỡng lự thì còn 18/25 (xem [`eval/report.md`](../eval/report.md)).
+- **Tỉ lệ đạt:** 21/25 (84%), lượt `run-2@20261128-121029`. Nhật Minh đã kiểm chéo (có AI hỗ trợ, không chấm độc lập), đề nghị giữ nguyên 25/25 điểm ([`review-run-2.md`](../eval/review-run-2.md)); chờ Vinh xác nhận bản ghi và Đức Minh duyệt. Chấm chặt 4 câu lưỡng lự thì còn 18/25 (xem [`eval/report.md`](../eval/report.md)).
 - **Token đo trên** `openai/gpt-4.1-mini`, **tính giá thêm cho** `gemini-3.1-flash-lite` và `gemini-4-hydrogen`. Hai model Gemini chưa chạy thử: token và tỉ lệ đạt của chúng có thể khác.
 - Tỷ giá 1 USD = 25.687 ₫ (tỷ giá trung tâm NHNN 27/11/2026, [theo báo](https://thitruongtaichinhtiente.vn/ngay-27-11-ty-gia-trung-tam-tang-11-dong-87350.html)).
 
