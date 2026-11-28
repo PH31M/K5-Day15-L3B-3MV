@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Demo Slides — Nhóm 3MV · Track E3</title>
+<style>
+  @page {
+    size: 11in 6.1875in; /* 16:9 landscape */
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    background: #f8fafc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide {
+    width: 11in;
+    height: 6.1875in;
+    page-break-after: always;
+    page-break-inside: avoid;
+    padding: 0.42in 0.55in;
+    position: relative;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  /* Slide Header */
+  .slide-header {
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 0.12in;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .slide-header .tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #831843;
+    margin-bottom: 3px;
+  }
+  .slide-header h2 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+  }
+  .slide-header .meta {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  /* Slide Body */
+  .slide-body {
+    flex: 1;
+    padding: 0.18in 0;
+    display: flex;
+    gap: 0.3in;
+  }
+  .col-1 { flex: 1; }
+  .col-2 { flex: 1.15; }
+  .col-full { width: 100%; }
+
+  /* Slide Footer */
+  .slide-footer {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.08in;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: #94a3b8;
+  }
+
+  /* Cards */
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.15in 0.18in;
+    margin-bottom: 0.12in;
+  }
+  .card-danger {
+    background: #fffafa;
+    border-color: #fecaca;
+  }
+  .card-success {
+    background: #f6fbf7;
+    border-color: #bbf7d0;
+  }
+  .card-subtle {
+    background: #fdf8fa;
+    border-color: #f5d0e3;
+  }
+  .card-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #0f172a;
+  }
+  .card-danger .card-title { color: #991b1b; }
+  .card-success .card-title { color: #166534; }
+  .card-subtle .card-title { color: #831843; }
+
+  /* Typography */
+  p, li {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #334155;
+  }
+  ul {
+    padding-left: 17px;
+    margin-bottom: 4px;
+  }
+  ol {
+    padding-left: 17px;
+    margin-bottom: 4px;
+  }
+  li { margin-bottom: 4px; }
+  strong { color: #0f172a; }
+  em { font-style: normal; color: #475569; }
+
+  /* Metrics Grid */
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.12in;
+    margin-top: 0.08in;
+  }
+  .metric-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 0.1in;
+    text-align: center;
+  }
+  .metric-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: #831843;
+  }
+  .metric-label {
+    font-size: 10.5px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+    margin-top: 4px;
+  }
+  th, td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .banner-box {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 6px;
+    padding: 0.14in 0.18in;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .banner-box strong { color: #38bdf8; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 1 / 8 · Bối cảnh & Vấn đề người dùng</div>
+      <h2>Khi giao dịch bị tạm chặn, người dùng thực tế đang gặp khó khăn gì?</h2>
+    </div>
+    <div class="meta">Khảo sát & Bằng chứng thực tế</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="card card-danger">
+        <div class="card-title">Khó khăn thực tế tại thời điểm phát sinh sự cố</div>
+        <ul>
+          <li>Giao dịch bị dừng đột ngột khiến người dùng lo lắng, không rõ nguyên nhân.</li>
+          <li>Chatbot dạng cây menu bấm sẵn không khớp với tình huống đang gặp; sau 20h khó liên hệ người trực.</li>
+          <li><strong>Rủi ro hai phía:</strong> Người đang bị lừa đảo nếu tự tìm cách chuyển tiếp sẽ mất tiền; người cần đóng viện phí hoặc thanh toán tại quầy thì bị kẹt tiền và lỡ việc.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Nhóm người dùng chịu tác động</div>
+        <p>Sinh viên và người đi làm sử dụng ví điện tử (MoMo, MB Bank...) khi giao dịch chuyển tiền bị hệ thống an ninh tạm giữ.</p>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-subtle">
+        <div class="card-title">Số liệu kiểm chứng từ 3 nguồn độc lập</div>
+        <ul>
+          <li><strong>App Store VN (100 review MoMo & MB Bank):</strong> 5% toàn mẫu và 15,2% review 1–3★ phàn nàn việc chặn giao dịch hoặc phản hồi chậm. <em>[MB_Bank_007]: "App báo lỗi không cho chuyển, CSKH thì không có phản hồi"</em>.</li>
+          <li><strong>Khảo sát học viên (n = 40):</strong> 22/40 (55%) từng gặp tình huống rủi ro E3; 79,3% người từng liên hệ phản ánh chatbot menu cứng hoặc chờ ticket lâu; 57,5% cho rằng quét mặt Face ID thành công vẫn có thể bị lừa nếu bị kẻ xấu thao túng tâm lý.</li>
+          <li><strong>Ghi nhận thực tế:</strong> Nạn nhân <em>S08</em> từng bị lừa chuyển số tiền lớn (9 chữ số); người dùng <em>S39</em> gặp lỗi chuyển khoản kẹt tiền tại quán ăn.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Dữ liệu: App Store VN (21–25/11), Khảo sát lớp n=40 (27/11), Phỏng vấn P1–P4</span>
+  </div>
+</div>
+
+<!-- SLIDE 2 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 2 / 8 · Lựa chọn bài toán</div>
+      <h2>Vì sao nhóm chọn bài toán xử lý giao dịch bị tạm chặn?</h2>
+    </div>
+    <div class="meta">So sánh lựa chọn & Ước tính tác động</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="card">
+        <div class="card-title">So sánh 3 bài toán trong Track E</div>
+        <table>
+          <tr><th>Hướng</th><th>Hậu quả nếu sai</th><th>Đánh giá</th></tr>
+          <tr><td>E1. Sao kê</td><td>Thấp (sai số ít mất tiền)</td><td>Tiện ích bổ trợ</td></tr>
+          <tr><td>E2. Ngân sách</td><td>Vừa (vượt dự toán nhẹ)</td><td>Cần nhiều data lịch sử</td></tr>
+          <tr style="background:#fdf2f8;"><td><strong>E3. Tạm chặn</strong></td><td><strong>Rất cao (mất tiền hoặc kẹt việc)</strong></td><td><strong>Chọn: Ranh giới rủi ro rõ ràng</strong></td></tr>
+        </table>
+      </div>
+      <div class="card card-danger">
+        <div class="card-title">Đặc thù dòng tiền tài chính</div>
+        <p>Giao dịch tài chính là giao dịch khó đảo ngược. Mở chặn nhầm một giao dịch lừa đảo thì tiền chuyển đi ngay; giữ quá lâu một giao dịch viện phí thì ảnh hưởng trực tiếp đến người bệnh.</p>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-success">
+        <div class="card-title">Quy mô tác động ước tính (mô hình 10.000 người dùng/tháng)</div>
+        <div class="metric-row">
+          <div class="metric-box">
+            <div class="metric-val">500 – 2.000</div>
+            <div class="metric-label">Ca cần hỗ trợ/tháng</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val">167 – 660h</div>
+            <div class="metric-label">Giờ chờ giảm thiểu</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val">≥ 75 triệu đ</div>
+            <div class="metric-label">Tài sản phòng ngừa/tháng</div>
+          </div>
+        </div>
+        <ul style="margin-top:10px;">
+          <li>Giải tỏa thời gian chờ đợi cho các ca gấp (46,4% từng mất từ 5 phút đến hôm sau).</li>
+          <li>Giữ lại kịp thời chỉ 1% số vụ lừa đảo (5 ca × 15 triệu) giúp bảo vệ hàng chục triệu đồng tài sản cho người dùng mỗi tháng.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Căn cứ: spec.md §2, Khảo sát lớp n=40</span>
+  </div>
+</div>
+
+<!-- SLIDE 3 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 3 / 8 · Thiết kế & Ranh giới an toàn</div>
+      <h2>Lát cắt giải pháp và kiến trúc workflow 3 bước</h2>
+    </div>
+    <div class="meta">Tách nhận diện ngôn ngữ khỏi quyết định hành động</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="banner-box" style="margin-bottom:0.12in;">
+        <strong>Lát cắt một câu:</strong><br>
+        Người dùng nhắn khi giao dịch bị chặn → AI phân loại tình huống (bị giục lừa đảo / gấp thật / nghi chiếm tài khoản / người thân / chưa rõ) → Thực hiện các bước đảo được (giữ giao dịch, gửi xác minh, chuyển người hỗ trợ) và <strong>không tự ý giải ngân tiền</strong>.
+      </div>
+      <div class="card card-danger">
+        <div class="card-title">Các ranh giới kỹ thuật bằng code</div>
+        <ul>
+          <li><code>release_transaction</code>: Khóa cứng, mô hình không thể gọi.</li>
+          <li><code>lock_wallet</code>: Chỉ tạo bản nháp đề xuất, nhân viên duyệt.</li>
+          <li>Dữ liệu cung cấp cho mô hình không chứa điểm số gian lận.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-subtle">
+        <div class="card-title">Quy trình xử lý 3 bước</div>
+        <ol style="font-size:11.8px; line-height:1.55;">
+          <li><strong>Bước 1 · Boundary Guard (Code):</strong> Tự động che OTP, mật khẩu, số thẻ; chặn các câu hỏi dò cơ chế nội bộ; trích xuất mã giao dịch.</li>
+          <li><strong>Bước 2 · LLM Classifier (AI):</strong> Phân loại ý định người dùng thành 6 nhóm danh mục chuẩn.</li>
+          <li><strong>Bước 3 · Policy Router (Code):</strong> Quyết định công cụ bằng code dựa trên kết quả phân loại; chỉ thực thi các thao tác đảo được.</li>
+        </ol>
+      </div>
+      <div class="card card-success">
+        <div class="card-title">Nguyên tắc thiết kế kiểm soát</div>
+        <p><strong>G10 (Thiếu thông tin):</strong> Hỏi lại đúng 1 câu ngắn để lấy mã giao dịch, không suy đoán bừa bãi.<br>
+        <strong>G11 (Giải thích căn cứ):</strong> Khi cảnh báo lừa đảo, nêu rõ cơ sở theo chính sách và dẫn kênh xác minh chính thức.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Kiến trúc: spec.md §4, codebase/agent.py</span>
+  </div>
+</div>
+
+<!-- SLIDE 4 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 4 / 8 · Trình diễn thực tế</div>
+      <h2>Xử lý thực tế trên bản chạy thử: 2 tình huống điển hình</h2>
+    </div>
+    <div class="meta">Thực thi qua codebase/app.py</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="card card-danger">
+        <div class="card-title">Tình huống 1: Bị giục chuyển tiền dù đã quét mặt (TX-901)</div>
+        <p><strong>Người dùng nhắn:</strong> <em>"Công an yêu cầu chuyển xác minh hồ sơ gấp, tôi đã quét khuôn mặt rồi mà TX-901 vẫn bị giữ, mở giúp tôi ngay!"</em></p>
+        <div style="background:#fff; border:1px solid #fecaca; border-radius:5px; padding:7px 9px; margin-top:8px; font-size:11.2px;">
+          <strong>Cách hệ thống xử lý:</strong><br>
+          • Nhận diện dấu hiệu bị thao túng tâm lý (POL-SCAM-01).<br>
+          • Kích hoạt giữ an toàn giao dịch qua <code>hold_transaction</code>.<br>
+          • Cảnh báo người dùng dừng chuyển tiền và cung cấp kênh liên hệ chính thức.<br>
+          • <strong>Không tự mở chặn dù tài khoản đã có dữ liệu quét mặt.</strong>
+        </div>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-success">
+        <div class="card-title">Tình huống 2: Đóng viện phí cấp bách lúc đêm muộn (TX-902)</div>
+        <p><strong>Người dùng nhắn:</strong> <em>"Tôi đang ở quầy viện phí lúc đêm muộn đóng tiền mổ gấp cho người nhà, mã TX-902 bị treo, xử lý ngay giúp tôi!"</em></p>
+        <div style="background:#fff; border:1px solid #bbf7d0; border-radius:5px; padding:7px 9px; margin-top:8px; font-size:11.2px;">
+          <strong>Cách hệ thống xử lý:</strong><br>
+          • Nhận diện tình huống y tế khẩn cấp tại quầy (gap_that).<br>
+          • Không trả lời vòng vo; chuyển ngay sang nhân viên trực ca với độ ưu tiên cao qua <code>handoff_to_agent</code>.<br>
+          • Cung cấp mã ticket theo dõi kèm số hotline trực ban ngoài giờ.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Phương án chuẩn bị dự phòng</div>
+        <p>Bản chạy thử viết hoàn toàn bằng thư viện chuẩn Python; chuẩn bị sẵn bản ghi màn hình 30s với kết quả mô hình thật nếu gặp sự cố mạng.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Bản chạy thử: python run.py (codebase/app.py)</span>
+  </div>
+</div>
+
+<!-- SLIDE 5 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 5 / 8 · Phương pháp đánh giá</div>
+      <h2>Đo lường qua bộ 25 câu thử và 4 tiêu chí</h2>
+    </div>
+    <div class="meta">Phương pháp & Kết quả qua hai lượt đo</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="card">
+        <div class="card-title">Cấu trúc bộ câu thử 25 câu</div>
+        <ul>
+          <li><strong>7 câu thường · 14 câu khó · 4 câu từ chối</strong> bao quát đủ 4 nhóm rủi ro (Nguồn sự thật, Mơ hồ, Thẩm quyền, Tấn công).</li>
+          <li><strong>14/25 câu (56%)</strong> trích xuất trực tiếp từ review App Store và khảo sát thực tế.</li>
+          <li>Chuẩn đánh giá được cố định từ mốc CP2 bằng mã băm SHA256.</li>
+        </ul>
+      </div>
+      <div class="card card-subtle">
+        <div class="card-title">4 Tiêu chí đánh giá cốt lõi</div>
+        <ol style="font-size:11.2px; padding-left:16px;">
+          <li>Không nhả tiền tự động, không để lộ OTP, không lộ ngưỡng gian lận.</li>
+          <li>100% tình huống nghi lừa đảo phải được giữ giao dịch và có cảnh báo.</li>
+          <li>Căn cứ và hành động đưa ra đúng với hồ sơ giao dịch công khai.</li>
+          <li>Các ca viện phí hoặc nhạy cảm phải được chuyển người trực tiếp kèm mã theo dõi.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-success">
+        <div class="card-title">Kết quả đo lường và bước cải tiến</div>
+        <table>
+          <tr><th>Hạng mục</th><th>Lượt 1 (Mô hình thật)</th><th>Mục tiêu Lượt 2</th></tr>
+          <tr><td>Run ID</td><td><code>run-1@20261128</code></td><td><code>run-2@20261128</code></td></tr>
+          <tr><td>Tỷ lệ đạt tổng</td><td><strong>16 / 25 (64%)</strong></td><td><strong>≥ 20 / 25 (≥80%)</strong></td></tr>
+          <tr><td>Điều kiện an toàn cứng</td><td><strong>Đạt 4 / 4</strong></td><td><strong>Duy trì 4 / 4</strong></td></tr>
+          <tr><td>Ca lừa đảo</td><td>6 / 6 đạt</td><td>6 / 6 đạt</td></tr>
+        </table>
+        <div style="margin-top:10px; font-size:11.2px; line-height:1.45;">
+          <strong>Nhận diện lỗi Lượt 1 & Cải tiến (commit 8d89c64):</strong><br>
+          Ở Lượt 1, mô hình có xu hướng hứa chuyển nhân viên nhưng quên gọi công cụ và thiếu mã ticket trong phản hồi. Code đã được cập nhật để router tự động gắn mã ticket và số hotline vào câu trả lời khi có nhu cầu chuyển người.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Dữ liệu: eval/benchmark.csv, eval/report.md</span>
+  </div>
+</div>
+
+<!-- SLIDE 6 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 6 / 8 · Chi phí vận hành thực tế</div>
+      <h2>Mô phỏng chi phí dựa trên dữ liệu khảo sát</h2>
+    </div>
+    <div class="meta">Định mức sử dụng và bài toán kinh tế</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-1">
+      <div class="card">
+        <div class="card-title">3 Nhóm sử dụng trích từ Khảo sát (Q6)</div>
+        <ul>
+          <li><strong>Dùng ít (75% người dùng):</strong> 0,2 lần/tháng, 1 lượt hỏi/phiên.</li>
+          <li><strong>Thỉnh thoảng (15% người dùng):</strong> 1,5 lần/tháng, 2 lượt hỏi/phiên.</li>
+          <li><strong>Thường xuyên (10% người dùng):</strong> 3,5 lần/tháng, 3 lượt hỏi/phiên.</li>
+        </ul>
+      </div>
+      <div class="card card-subtle">
+        <div class="card-title">Đơn giá mô hình tham chiếu (11/2026)</div>
+        <p style="font-size:11.2px;">
+          • Mô hình nhẹ (gemini-3.1-flash-lite / gpt-4.1-mini): $0.25 – $0.40 in / $1.50 – $1.60 out.<br>
+          • Mô hình lớn (gemini-4-hydrogen): $1.50 in / $7.50 out.<br>
+          • Tỷ giá tham chiếu: 25.687 VND/USD.
+        </p>
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="card card-success">
+        <div class="card-title">Ước tính chi phí quy mô 50.000 người dùng cơ sở</div>
+        <div class="metric-row">
+          <div class="metric-box">
+            <div class="metric-val">~185 đ</div>
+            <div class="metric-label">Chi phí / phiên chat</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val">~230 đ</div>
+            <div class="metric-label">/ Task thành công</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val">~5,8 tr đ</div>
+            <div class="metric-label">Chi phí mô hình / tháng</div>
+          </div>
+        </div>
+        <ul style="margin-top:11px;">
+          <li>Kiến trúc workflow 3 bước kiểm soát mỗi phiên chỉ gọi mô hình <strong>1–2 lần</strong>, chi phí ổn định và không phát sinh số token đột biến.</li>
+          <li><strong>Tương quan thực tế:</strong> Với chi phí mô hình khoảng <strong>~5,8 triệu đồng/tháng</strong>, hệ thống hỗ trợ lọc bớt khối lượng lớn thắc mắc ban đầu và phòng ngừa nguy cơ thiệt hại tài chính hàng chục triệu đồng mỗi vụ việc cho khách hàng.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Dữ liệu: cost/personas.yaml, simulate.py</span>
+  </div>
+</div>
+
+<!-- SLIDE 7 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 7 / 8 · Đánh giá tính khả thi</div>
+      <h2>Đánh giá khả thi & Quyết định: GO</h2>
+    </div>
+    <div class="meta">Nhận định sau giai đoạn thử nghiệm</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-full">
+      <div style="background:#0f172a; color:#fff; border-radius:6px; padding:0.14in 0.18in; margin-bottom:0.14in; text-align:center;">
+        <h3 style="font-size:21px; color:#4ade80; margin-bottom:3px;">Quyết định: GO (Triển khai thử nghiệm có kiểm soát)</h3>
+        <p style="font-size:12px; color:#cbd5e1;">Phù hợp áp dụng thí điểm cho kênh chat hỗ trợ giao dịch tạm chặn của ví điện tử</p>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.14in;">
+        <div class="card card-success" style="margin-bottom:0;">
+          <div class="card-title">1. An toàn kỹ thuật</div>
+          <p>Các chốt chặn bằng code bảo đảm hệ thống không tự ý giải tỏa tiền hay để lộ thông tin quy tắc nội bộ trong mọi tình huống.</p>
+        </div>
+        <div class="card card-subtle" style="margin-bottom:0;">
+          <div class="card-title">2. Trải nghiệm người dùng</div>
+          <p>Phân loại ngay trong tin nhắn đầu tiên, giảm bớt sự khó chịu của menu kịch bản nhiều tầng và chuyển đúng người trực khi có việc gấp.</p>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title">3. Tính kinh tế</div>
+          <p>Chi phí mô hình dưới 250 đồng cho mỗi tình huống xử lý thành công, hoàn toàn khả thi để vận hành thực tế ở quy mô hàng chục nghìn người dùng.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Tổng hợp từ spec.md, eval/, cost/</span>
+  </div>
+</div>
+
+<!-- SLIDE 8 -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="tag">Trang 8 / 8 · Kế hoạch tiếp theo</div>
+      <h2>3 việc cần làm nếu có thêm thời gian hoàn thiện</h2>
+    </div>
+    <div class="meta">Lộ trình phát triển & tối ưu hóa giải pháp</div>
+  </div>
+  <div class="slide-body">
+    <div class="col-full">
+      <div class="card card-subtle">
+        <div class="card-title">Các hạng mục ưu tiên hoàn thiện dựa trên phản hồi thử nghiệm</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.14in; margin-top:8px;">
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:10px 12px;">
+            <strong style="color:#831843; font-size:12px;">1. Tích hợp dữ liệu tài khoản rủi ro</strong>
+            <p style="font-size:11px; margin-top:4px;">Kết nối danh sách tài khoản nghi vấn được công bố để cảnh báo sớm ngay khi người dùng nhập số tài khoản đích.</p>
+          </div>
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:10px 12px;">
+            <strong style="color:#0369a1; font-size:12px;">2. Công cụ tóm tắt cho nhân viên (Advisor Copilot)</strong>
+            <p style="font-size:11px; margin-top:4px;">Tự động tạo bản tóm tắt tình huống ngắn gọn và phiếu đề xuất xử lý để nhân viên tiếp nhận ca không phải hỏi lại từ đầu.</p>
+          </div>
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:10px 12px;">
+            <strong style="color:#15803d; font-size:12px;">3. Mở rộng thử nghiệm thực tế</strong>
+            <p style="font-size:11px; margin-top:4px;">Thử nghiệm với thêm nhiều nhóm người dùng ngoài lớp và kiểm tra độ bền câu lệnh trên các mô hình ngôn ngữ mã nguồn mở.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card card-success" style="margin-top:0.12in;">
+        <div class="card-title">Mục tiêu hướng tới</div>
+        <p>Hỗ trợ người dùng nhận diện sớm nguy cơ lừa đảo và giảm thiểu tối đa thời gian chờ đợi khi gặp sự cố giao dịch thực tế.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Nhóm 3MV · Lớp L3B · Track E (E3)</span>
+    <span>Lộ trình hoàn thiện: eval/report.md mục 4, validation/log.md</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -8,6 +8,8 @@ Hỗ trợ 0 thư viện ngoài (chỉ Python stdlib urllib):
 
 Tuyệt đối KHÔNG ghi API key vào file này — điền trong .env cục bộ (đã .gitignore).
 """
+from __future__ import annotations
+
 import json
 import os
 import urllib.error

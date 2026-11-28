@@ -79,14 +79,13 @@ Nhóm dùng stack khác (Node, Streamlit, notebook…): sửa hàm `run_app()` t
 
 | Thành phần | Thật / Giả | Ghi chú |
 |---|---|---|
-| Lời gọi AI ở quyết định trung tâm | **Thật** (bắt buộc từ CP3) | Model: ____ |
-|  |  |  |
+| Lời gọi AI ở quyết định trung tâm | **Thật** (bắt buộc từ CP3) | Model: openai/gpt-4.1-mini (qua OpenRouter) |
+| Bộ công cụ tra cứu & xử lý giao dịch | **Thật** | 7 công cụ tại `codebase/tools.py` |
+| Dữ liệu giao dịch giả lập | **Giả** (`synthetic`) | 8 giao dịch có seed tại `data/held_transactions.json` |
 
 ## Dùng AI vào việc gì
 
-2–3 dòng (bắt buộc): nhóm dùng công cụ AI nào để làm gì, người kiểm lại phần nào. Chi tiết: [docs/ai-usage.md](docs/ai-usage.md). Coding agent đọc [AGENTS.md](AGENTS.md).
-
-____
+Nhóm dùng Antigravity CLI và OpenAI GPT-4.1-mini để hỗ trợ viết script cào review App Store, tự động hoá thống kê khảo sát và phân loại rủi ro giao dịch. Mọi nhãn dữ liệu, tiêu chí đánh giá an toàn tài chính, chuẩn đạt và quyết định phân làn đều do các thành viên nhóm kiểm tra độc lập và chịu trách nhiệm. Chi tiết: [docs/ai-usage.md](docs/ai-usage.md). Coding agent đọc [AGENTS.md](AGENTS.md).
 
 ## File mẫu — điền ở bước nào
 
